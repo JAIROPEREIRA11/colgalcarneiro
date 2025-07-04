@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Colégio Estadual General Carneiro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #004aad;
+      color: white;
+      padding: 1rem;
+    }
+    .logo {
+      max-width: 120px;
+      margin-top: 1rem;
+    }
+    h1 {
+      margin-top: 0.5rem;
+    }
+    .buttons {
+      margin: 2rem 0;
+    }
+    .button {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem 2rem;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+    .recados {
+      max-width: 600px;
+      margin: auto;
+      text-align: left;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .recado {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
+    <h1>Colégio Estadual General Carneiro</h1>
+  </header>
+  <div class="buttons">
+    <a href="https://rco.paas.pr.gov.br/" class="button" target="_blank">Acessar RCO</a>
+    <a href="https://www.registropontoseed.pr.gov.br/" class="button" target="_blank">Registro de Ponto</a>
+  </div>
+
+  <div class="recados" id="recados">
+    <h2>📢 Recados Importantes</h2>
+    <div id="recadoList">Carregando recados...</div>
+  </div>
+
+  <script type="module" src="firebase.js"></script>
+</body>
+</html>
