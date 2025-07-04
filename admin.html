@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Administração</title>
+  <style>
+    body {{ font-family: sans-serif; text-align: center; padding: 2rem; }}
+    textarea, input {{ display: block; margin: 1rem auto; width: 300px; padding: 0.5rem; }}
+    button {{ padding: 0.5rem 1rem; }}
+  </style>
+</head>
+<body>
+  <h1>Painel de Recados</h1>
+  <input type="text" id="titulo" placeholder="Título do recado" />
+  <textarea id="mensagem" placeholder="Escreva a mensagem..."></textarea>
+  <button onclick="publicarRecado()">Publicar Recado</button>
+  <p id="status"></p>
+
+  <script type="module" src="firebase-admin.js"></script>
+</body>
+</html>

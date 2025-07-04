@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Colégio GC</title>
+  <style>
+    body {{ font-family: sans-serif; text-align: center; padding: 2rem; }}
+    input {{ display: block; margin: 1rem auto; padding: 0.5rem; width: 200px; }}
+    button {{ padding: 0.5rem 1rem; }}
+  </style>
+</head>
+<body>
+  <h1>Login - Administração de Recados</h1>
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="senha" placeholder="Senha" />
+  <button onclick="login()">Entrar</button>
+  <p id="erro" style="color: red;"></p>
+
+  <script type="module" src="firebase-admin.js"></script>
+</body>
+</html>
