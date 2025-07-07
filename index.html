@@ -4,8 +4,134 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Colégio Estadual General Carneiro</title>
-  <!-- Referência para o arquivo CSS externo -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    /* Estilos do cabeçalho */
+    header {
+      background-color: #004aad;
+      color: white;
+      padding: 1rem;
+      position: relative;
+    }
+
+    .logo {
+      max-width: 120px;
+      margin-top: 1rem;
+    }
+
+    h1 {
+      margin-top: 0.5rem;
+    }
+
+    /* Estilos para os links de login/logout */
+    .login-link, .logout-link {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    /* Estilos do botão Área Administrativa */
+    .login-link a {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    /* Estilos do botão logout */
+    .logout-link button {
+      background-color: #dc3545;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Estilos para os botões principais da página */
+    .buttons {
+      margin: 2rem 0;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem 2rem;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+
+    /* Estilos da área de recados */
+    .recados {
+      max-width: 600px;
+      margin: auto;
+      text-align: left;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .recado {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    /* Responsividade para telas menores */
+    @media (max-width: 600px) {
+      /* Reduz o tamanho do botão Área Administrativa */
+      .login-link a {
+        padding: 0.4rem 1rem;      /* Menor padding */
+        font-size: 0.85rem;         /* Menor tamanho de fonte */
+      }
+
+      /* Ajusta o tamanho da logo */
+      .logo {
+        max-width: 100px;
+      }
+
+      /* Ajusta o espaçamento e tamanho da fonte */
+      header {
+        padding: 0.8rem;
+      }
+
+      /* Ajusta o botão de sair */
+      .logout-link button {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      /* Ajusta o tamanho dos botões principais */
+      .button {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+      }
+
+      /* Ajusta a área de recados */
+      .recados {
+        padding: 0.8rem;
+        max-width: 90%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -24,7 +150,7 @@
   <div class="buttons">
     <a href="https://rco.paas.pr.gov.br/" class="button" target="_blank">Acessar RCO</a>
     <a href="https://www.registropontoseed.pr.gov.br/" class="button" target="_blank">Registro de Ponto</a>
-    <a href="https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=a8abb4bb284b5b27aa7cb790dc20f80b&redirect_uri=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FObterToken.ashx&scope=central.seguranca.autenticado&state=1751919305&urlCert=https://certauth-cs.identidadedigital.pr.gov.br&dnsCidadao=https://cidadao-cs.identidadedigital.pr.gov.br/centralcidadao&origemRequisicao=portal&loginPadrao=btnCentral&labelCentral=CPF&modulosDeAutenticacao=btnGovbr,btnCertificado,btnSms,btnCpf,btnEmailToken,btnCentral&urlLogo=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FContent%2Fimg%2FLoginCentral.png&acesso=2070&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&captcha=false" class="button" target="_blank">Contra Cheque</a>
+    <a href="https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=a8abb4bb284b5b27aa7cb790dc20f80b&redirect_uri=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FObterToken.ashx&scope=central.seguranca.autenticado&state=1751919305&urlCert=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FContent%2Fimg%2FLoginCentral.png&acesso=2070&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&captcha=false" class="button" target="_blank">Contra Cheque</a>
   </div>
 
   <div class="recados" id="recados">
