@@ -8,6 +8,8 @@
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
       text-align: center;
     }
     header {
@@ -17,11 +19,13 @@
       position: relative;
     }
     .logo {
-      max-width: 120px;
+      max-width: 100%;
+      height: auto;
       margin-top: 1rem;
     }
     h1 {
       margin-top: 0.5rem;
+      font-size: 1.5rem;
     }
     .login-link {
       position: absolute;
@@ -62,6 +66,39 @@
       padding: 0.5rem;
       border-bottom: 1px solid #ccc;
     }
+    
+    /* Responsividade para telas menores */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+      .button-link {
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+      }
+      .recados {
+        max-width: 90%;
+        padding: 1rem;
+      }
+      .logo {
+        max-width: 80%;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .login-link {
+        position: relative;
+        top: unset;
+        right: unset;
+      }
+      h1 {
+        font-size: 1.1rem;
+      }
+      .button-link {
+        font-size: 1rem;
+        padding: 0.7rem 1.2rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -69,7 +106,6 @@
   <header>
     <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
     <h1>Colégio Estadual General Carneiro</h1>
-    
     <!-- Link para a área administrativa -->
     <div class="login-link" id="loginLink">
       <a href="login.html" class="button">Área Administrativa</a>
