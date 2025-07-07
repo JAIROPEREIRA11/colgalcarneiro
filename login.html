@@ -100,8 +100,14 @@
       try {
         // Tenta fazer o login
         await signInWithEmailAndPassword(auth, email, senha);
-        // Redireciona para a página administrativa após login bem-sucedido
-        window.location.href = "admin.html"; // Redirecionando para a página de administração
+        
+        // Verifica se o login foi bem-sucedido e redireciona para a página de administração
+        auth.onAuthStateChanged((user) => {
+          if (user) {
+            // Redireciona para a página de administração após o login bem-sucedido
+            window.location.href = "admin.html"; // Aqui é onde você deseja redirecionar para a página de administração
+          }
+        });
       } catch (error) {
         erroEl.textContent = "Erro ao fazer login: " + error.message;
       } finally {
