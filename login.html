@@ -5,7 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - Colégio GC</title>
   <style>
-    /* Adicione estilos básicos */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #f2f2f2;
+    }
+    input {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem;
+      width: 220px;
+    }
+    button {
+      padding: 0.5rem 1.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #erro {
+      color: red;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -14,6 +40,7 @@
   <input type="email" id="email" placeholder="Email" />
   <input type="password" id="senha" placeholder="Senha" />
   <button onclick="login()">Entrar</button>
+
   <p id="erro"></p>
 
   <script type="module">
@@ -33,7 +60,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Função de login
     window.login = async function () {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
@@ -47,5 +73,6 @@
       }
     };
   </script>
+
 </body>
 </html>

@@ -5,19 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colégio Estadual General Carneiro</title>
   <style>
-    /* Estilos aqui (mantenha os seus estilos existentes ou ajuste conforme necessário) */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    header {
+      background-color: #004aad;
+      color: white;
+      padding: 1rem;
+      position: relative;
+    }
+    .logo {
+      max-width: 120px;
+      margin-top: 1rem;
+    }
+    h1 {
+      margin-top: 0.5rem;
+    }
+    .login-link {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+    .button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background-color: #28a745;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .recados {
+      max-width: 600px;
+      margin: 2rem auto;
+      text-align: left;
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .recado {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
+
   <header>
+    <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
     <h1>Colégio Estadual General Carneiro</h1>
+    
     <!-- Link para a área administrativa -->
-    <div class="login-link" id="loginLink">
+    <div class="login-link">
       <a href="login.html" class="button">Área Administrativa</a>
     </div>
   </header>
 
-  <!-- Recados -->
   <div class="recados">
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
@@ -63,23 +109,24 @@
       });
     }
 
-    // Verifica autenticação e atualiza os links de login/logout
-    onAuthStateChanged(auth, (user) => {
-      const loginLink = document.getElementById("loginLink");
-      if (user) {
-        loginLink.style.display = "none";
-      } else {
-        loginLink.style.display = "block";
-      }
-    });
-
     // Função de logout
     window.logout = async function () {
       await signOut(auth);
       window.location.href = "login.html";
     };
 
+    // Verifica autenticação e atualiza os links de login/logout
+    onAuthStateChanged(auth, (user) => {
+      const loginLink = document.getElementById("loginLink");
+      if (user) {
+        loginLink.style.display = "none"; // Esconde o link de login se estiver logado
+      } else {
+        loginLink.style.display = "block";
+      }
+    });
+
     carregarRecados(); // Carrega os recados na inicialização
   </script>
+
 </body>
 </html>
