@@ -22,11 +22,24 @@ const auth = getAuth(app);
 // Função principal
 function carregarRecadosComAuth() {
   const container = document.getElementById("recadoList");
-  container.innerHTML = "Verificando autenticação...";
+  const loadingMessage = "Carregando recados..."; // Mensagem de carregamento
 
+  // Exibe a mensagem de carregamento
+  container.innerHTML = loadingMessage;
+
+  // Verifica autenticação
   onAuthStateChanged(auth, async (user) => {
-    container.innerHTML = ""; // Limpa o conteúdo
+    // Limpa o conteúdo da lista de recados
+    container.innerHTML = "";
 
+    if (!user) {
+      // Caso não esteja logado, exibe mensagem
+      container.innerHTML = "Você precisa estar logado para visualizar os recados.";
+      console.log("Usuário não autenticado – modo leitura.");
+      return;
+    }
+
+    // Se estiver logado, carrega os recados
     const recadosRef = collection(db, "recados");
     const snapshot = await getDocs(recadosRef);
 
@@ -50,10 +63,6 @@ function carregarRecadosComAuth() {
 
       container.appendChild(el);
     });
-
-    if (!user) {
-      console.log("Usuário não autenticado – modo leitura.");
-    }
   });
 }
 
@@ -62,7 +71,7 @@ window.removerRecado = async function (id) {
   const confirmar = confirm("Tem certeza que deseja apagar este recado?");
   if (confirmar) {
     await deleteDoc(doc(db, "recados", id));
-    carregarRecadosComAuth(); // Atualiza a lista
+    carregarRecadosComAuth(); // Atualiza a lista de recados
   }
 };
 

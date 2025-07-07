@@ -34,6 +34,7 @@ window.login = async function () {
 
   try {
     await signInWithEmailAndPassword(auth, email, senha);
+    // Garantir que o redirecionamento ocorre após o login completo
     window.location.href = "admin.html";
   } catch (error) {
     erroEl.textContent = "Erro no login: " + error.message;
@@ -44,6 +45,7 @@ window.login = async function () {
 if (window.location.pathname.includes("admin.html")) {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
+      // Se não estiver logado, redireciona para a página de login
       window.location.href = "login.html";
     }
   });
@@ -55,11 +57,17 @@ window.publicarRecado = async function () {
   const mensagem = document.getElementById("mensagem").value;
   const status = document.getElementById("status");
 
+  if (!titulo || !mensagem) {
+    status.textContent = "❌ Preencha todos os campos para publicar o recado.";
+    return;
+  }
+
   try {
     await addDoc(collection(db, "recados"), {
       titulo,
       mensagem,
-      data: new Date()
+      data: new Date(),
+      usuarioId: auth.currentUser.uid // Associando o recado ao ID do usuário autenticado
     });
     status.textContent = "✅ Recado publicado com sucesso!";
     document.getElementById("titulo").value = "";

@@ -25,7 +25,7 @@
     h1 {
       margin-top: 0.5rem;
     }
-    .admin-link, .logout-link {
+    .admin-link, .logout-link, .login-link {
       position: absolute;
       top: 1rem;
       right: 1rem;
@@ -73,9 +73,9 @@
     <h1>Colégio Estadual General Carneiro</h1>
 
     <!-- Links para login ou logout dependendo do estado -->
-   <div class="admin-link">
-  <a href="login.html" class="button" style="background-color: #28a745; padding: 0.6rem 1.2rem; font-size: 1rem;">Área Administrativa</a>
-</div>
+    <div class="login-link" id="loginLink">
+      <a href="login.html" class="button" style="background-color: #28a745; padding: 0.6rem 1.2rem; font-size: 1rem;">Área Administrativa</a>
+    </div>
     <div class="logout-link" id="logoutLink" style="display: none;">
       <button onclick="logout()">Sair</button>
     </div>
@@ -94,8 +94,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
+    // Configurações Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
       authDomain: "colegio-general-carneiro.firebaseapp.com",
@@ -108,7 +110,28 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
+    // Carrega os recados
+    async function carregarRecados() {
+      const container = document.getElementById("recadoList");
+      container.innerHTML = "Carregando recados...";
+
+      const recadosRef = collection(db, "recados");
+      const snapshot = await getDocs(recadosRef);
+
+      container.innerHTML = ""; // Limpa a mensagem de carregamento
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const el = document.createElement("div");
+        el.className = "recado";
+        el.innerHTML = `<strong>${data.titulo}</strong><br>${data.mensagem}`;
+        container.appendChild(el);
+      });
+    }
+
+    // Verifica autenticação e atualiza os links de login/logout
     onAuthStateChanged(auth, (user) => {
       const loginLink = document.getElementById("loginLink");
       const logoutLink = document.getElementById("logoutLink");
@@ -116,18 +139,18 @@
       if (user) {
         loginLink.style.display = "none";
         logoutLink.style.display = "block";
+        carregarRecados(); // Carrega os recados se o usuário estiver logado
       } else {
         loginLink.style.display = "block";
         logoutLink.style.display = "none";
       }
     });
 
+    // Função de logout
     window.logout = async function () {
       await signOut(auth);
-      window.location.reload();
+      window.location.reload(); // Recarrega a página para atualizar a interface
     };
   </script>
-
-  <script type="module" src="firebase.js"></script>
 </body>
 </html>
