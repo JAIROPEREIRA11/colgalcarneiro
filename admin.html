@@ -58,6 +58,13 @@
     .recado button:hover {
       background-color: darkred;
     }
+    #voltarButton {
+      background-color: #28a745;
+      padding: 0.5rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -71,7 +78,11 @@
 
   <div id="recadoList">Carregando recados...</div>
 
-  <button onclick="logout()">Sair</button>
+  <!-- Botão de logout -->
+  <button id="logoutButton" onclick="logout()">Sair</button>
+
+  <!-- Botão de voltar após logout -->
+  <button id="voltarButton" onclick="voltarPagina()">Voltar à Página Inicial</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -95,7 +106,13 @@
     // Função de logout
     window.logout = async function () {
       await signOut(auth);
-      window.location.href = "login.html"; // Redireciona para login após logout
+      document.getElementById("logoutButton").style.display = "none"; // Esconde o botão de logout
+      document.getElementById("voltarButton").style.display = "block"; // Exibe o botão de voltar
+    };
+
+    // Função para voltar à página inicial
+    window.voltarPagina = function () {
+      window.location.href = "index.html"; // Redireciona para a página inicial
     };
 
     // Função para publicar o recado
@@ -115,7 +132,6 @@
       }
 
       try {
-        // Adiciona o recado ao Firestore
         await addDoc(collection(db, "recados"), {
           titulo,
           mensagem,
