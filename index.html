@@ -36,6 +36,18 @@
       border-radius: 6px;
       text-decoration: none;
     }
+    .buttons {
+      margin-top: 2rem;
+    }
+    .button-link {
+      padding: 1rem 2rem;
+      margin: 1rem;
+      background-color: #007bff;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
     .recados {
       max-width: 600px;
       margin: 2rem auto;
@@ -59,10 +71,17 @@
     <h1>Colégio Estadual General Carneiro</h1>
     
     <!-- Link para a área administrativa -->
-    <div class="login-link">
+    <div class="login-link" id="loginLink">
       <a href="login.html" class="button">Área Administrativa</a>
     </div>
   </header>
+
+  <!-- Botões adicionais (aparecem apenas se o usuário não estiver logado) -->
+  <div class="buttons" id="accessButtons">
+    <a href="https://rco.paas.pr.gov.br/" class="button-link" target="_blank">Acessar RCO</a>
+    <a href="https://www.registropontoseed.pr.gov.br/" class="button-link" target="_blank">Registro de Ponto</a>
+    <a href="https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=a8abb4bb284b5b27aa7cb790dc20f80b&redirect_uri=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FObterToken.ashx&scope=central.seguranca.autenticado&state=1751919305&urlCert=https://certauth-cs.identidadedigital.pr.gov.br&dnsCidadao=https://cidadao-cs.identidadedigital.pr.gov.br/centralcidadao&origemRequisicao=portal&loginPadrao=btnCentral&labelCentral=CPF&modulosDeAutenticacao=btnGovbr,btnCertificado,btnSms,btnCpf,btnEmailToken,btnCentral&urlLogo=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FContent%2Fimg%2FLoginCentral.png&acesso=2070&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&captcha=false" class="button-link" target="_blank">Contra Cheque</a>
+  </div>
 
   <div class="recados">
     <h2>📢 Recados Importantes</h2>
@@ -97,7 +116,6 @@
       const snapshot = await getDocs(recadosRef);
 
       container.innerHTML = ""; // Limpa a mensagem de carregamento
-
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const el = document.createElement("div");
@@ -112,20 +130,24 @@
     // Função de logout
     window.logout = async function () {
       await signOut(auth);
-      window.location.href = "login.html";
+      window.location.href = "login.html"; // Redireciona para login após logout
     };
 
     // Verifica autenticação e atualiza os links de login/logout
     onAuthStateChanged(auth, (user) => {
       const loginLink = document.getElementById("loginLink");
+      const accessButtons = document.getElementById("accessButtons");
+
       if (user) {
         loginLink.style.display = "none"; // Esconde o link de login se estiver logado
+        accessButtons.style.display = "none"; // Esconde os botões de acesso se estiver logado
       } else {
-        loginLink.style.display = "block";
+        loginLink.style.display = "block"; // Exibe o link de login se não estiver logado
+        accessButtons.style.display = "block"; // Exibe os botões de acesso se não estiver logado
       }
     });
 
-    carregarRecados(); // Carrega os recados na inicialização
+    carregarRecados(); // Carrega os recados ao carregar a página
   </script>
 
 </body>
