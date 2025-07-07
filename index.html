@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -17,6 +16,7 @@
       background-color: #004aad;
       color: white;
       padding: 1rem;
+      position: relative;
     }
     .logo {
       max-width: 120px;
@@ -24,6 +24,19 @@
     }
     h1 {
       margin-top: 0.5rem;
+    }
+    .admin-link {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+    .admin-link a {
+      background-color: #28a745;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.95rem;
     }
     .buttons {
       margin: 2rem 0;
@@ -58,11 +71,15 @@
   <header>
     <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
     <h1>Colégio Estadual General Carneiro</h1>
+    <div class="admin-link">
+      <a href="login.html">Área Administrativa</a>
+    </div>
   </header>
+
   <div class="buttons">
     <a href="https://rco.paas.pr.gov.br/" class="button" target="_blank">Acessar RCO</a>
     <a href="https://www.registropontoseed.pr.gov.br/" class="button" target="_blank">Registro de Ponto</a>
-     <a href="login.html" class="button" style="background-color: #28a745;">Área Administrativa</a>
+    <a href="https://auth-cs.identidadedigital.pr.gov.br/" class="button" target="_blank">Identidade Digital</a>
   </div>
 
   <div class="recados" id="recados">
