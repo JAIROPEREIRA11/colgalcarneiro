@@ -5,22 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administração de Recados</title>
   <style>
-    /* Adicione seus estilos para o painel de administração aqui */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    input {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem;
+      width: 220px;
+    }
+    textarea {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem;
+      width: 220px;
+      height: 100px;
+    }
+    button {
+      padding: 0.5rem 1.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #status {
+      margin-top: 1rem;
+      color: green;
+    }
+    .recado {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem auto;
+      width: 80%;
+      text-align: left;
+      border-radius: 8px;
+    }
+    .recado button {
+      background-color: red;
+      padding: 0.5rem 1rem;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .recado button:hover {
+      background-color: darkred;
+    }
   </style>
 </head>
 <body>
+
   <h1>Painel de Recados</h1>
 
   <input type="text" id="titulo" placeholder="Título do recado" />
-  <textarea id="mensagem" placeholder="Escreva a mensagem..."></textarea>
+  <textarea id="mensagem" placeholder="Escreva o recado..."></textarea>
   <button onclick="publicarRecado()">Incluir Recado</button>
   <p id="status"></p>
+
   <div id="recadoList">Carregando recados...</div>
+
   <button onclick="logout()">Sair</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -43,7 +98,7 @@
       window.location.href = "login.html"; // Redireciona para login após logout
     };
 
-    // Função para publicar recado
+    // Função para publicar o recado
     window.publicarRecado = async function () {
       const titulo = document.getElementById("titulo").value;
       const mensagem = document.getElementById("mensagem").value;
@@ -60,6 +115,7 @@
       }
 
       try {
+        // Adiciona o recado ao Firestore
         await addDoc(collection(db, "recados"), {
           titulo,
           mensagem,
@@ -88,10 +144,23 @@
         const data = docSnap.data();
         const el = document.createElement("div");
         el.className = "recado";
-        el.innerHTML = `<strong>${data.titulo}</strong><br>${data.mensagem}`;
+        el.innerHTML = `
+          <strong>${data.titulo}</strong><br>${data.mensagem}
+          <br>
+          <button onclick="removerRecado('${docSnap.id}')">🗑️ Remover</button>
+        `;
         container.appendChild(el);
       });
     }
+
+    // Função para remover o recado
+    window.removerRecado = async function (id) {
+      const confirmar = confirm("Deseja realmente remover este recado?");
+      if (confirmar) {
+        await deleteDoc(doc(db, "recados", id));
+        carregarRecados(); // Atualiza a lista de recados
+      }
+    };
 
     // Verificação de autenticação
     onAuthStateChanged(auth, (user) => {
@@ -102,5 +171,6 @@
 
     carregarRecados(); // Carrega os recados ao carregar a página
   </script>
+
 </body>
 </html>
