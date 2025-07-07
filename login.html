@@ -100,7 +100,8 @@
       try {
         // Tenta fazer o login
         await signInWithEmailAndPassword(auth, email, senha);
-        window.location.href = "index.html"; // Redireciona após login bem-sucedido
+        // Redireciona para a página administrativa após login bem-sucedido
+        window.location.href = "admin.html"; // Redirecionando para a página de administração
       } catch (error) {
         erroEl.textContent = "Erro ao fazer login: " + error.message;
       } finally {
