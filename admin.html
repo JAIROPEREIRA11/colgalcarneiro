@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Painel Administrativo - Colégio GC</title>
   <style>
-    /* Estilos para a área administrativa */
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -36,16 +35,25 @@
       border-radius: 5px;
       text-align: left;
     }
+    .logout-link {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <h1>Painel Administrativo</h1>
+  
+  <h2>Adicionar Recado</h2>
   <input type="text" id="titulo" placeholder="Título do Recado" />
   <textarea id="mensagem" placeholder="Mensagem do Recado"></textarea>
   <button onclick="adicionarRecado()">Adicionar Recado</button>
 
   <h2>Recados</h2>
   <div id="listaRecados"></div>
+
+  <div class="logout-link">
+    <button onclick="logout()">Sair</button>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -69,11 +77,11 @@
     // Protege a página caso o usuário não esteja autenticado
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        window.location.href = "login.html"; // Redireciona se o usuário não estiver logado
+        window.location.href = "login.html"; // Redireciona para login se não estiver logado
       }
     });
 
-    // Adicionar recado
+    // Função para adicionar recado
     async function adicionarRecado() {
       const titulo = document.getElementById("titulo").value;
       const mensagem = document.getElementById("mensagem").value;
@@ -83,11 +91,17 @@
         return;
       }
 
-      await addDoc(collection(db, "recados"), {
-        titulo,
-        mensagem
-      });
-      carregarRecados(); // Atualiza a lista de recados
+      try {
+        // Adiciona o recado no Firestore
+        const docRef = await addDoc(collection(db, "recados"), {
+          titulo,
+          mensagem
+        });
+        console.log("Recado adicionado com sucesso: ", docRef.id); // Mensagem de sucesso
+        carregarRecados(); // Atualiza a lista de recados
+      } catch (e) {
+        console.error("Erro ao adicionar recado: ", e); // Mensagem de erro
+      }
     }
 
     // Carregar recados
@@ -111,8 +125,18 @@
 
     // Remover recado
     async function removerRecado(id) {
-      await deleteDoc(doc(db, "recados", id));
-      carregarRecados(); // Atualiza a lista
+      try {
+        await deleteDoc(doc(db, "recados", id));
+        carregarRecados(); // Atualiza a lista
+      } catch (e) {
+        console.error("Erro ao remover recado: ", e);
+      }
+    }
+
+    // Logout
+    async function logout() {
+      await signOut(auth);
+      window.location.href = "login.html"; // Redireciona para a página de login
     }
 
     carregarRecados(); // Carrega os recados ao abrir a página
