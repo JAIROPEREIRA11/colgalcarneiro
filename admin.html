@@ -4,18 +4,132 @@
   <meta charset="UTF-8" />
   <title>Administração</title>
   <style>
-    body {{ font-family: sans-serif; text-align: center; padding: 2rem; }}
-    textarea, input {{ display: block; margin: 1rem auto; width: 300px; padding: 0.5rem; }}
-    button {{ padding: 0.5rem 1rem; }}
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #f2f2f2;
+    }
+    textarea, input {
+      display: block;
+      margin: 1rem auto;
+      width: 300px;
+      padding: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+    .recado {
+      max-width: 600px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      text-align: left;
+    }
   </style>
 </head>
 <body>
   <h1>Painel de Recados</h1>
+
   <input type="text" id="titulo" placeholder="Título do recado" />
   <textarea id="mensagem" placeholder="Escreva a mensagem..."></textarea>
   <button onclick="publicarRecado()">Publicar Recado</button>
   <p id="status"></p>
 
-  <script type="module" src="firebase-admin.js"></script>
+  <div id="recadoList">Carregando recados...</div>
+  <button onclick="logout()">Sair</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+    // Configuração Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
+      authDomain: "colegio-general-carneiro.firebaseapp.com",
+      projectId: "colegio-general-carneiro",
+      storageBucket: "colegio-general-carneiro.firebasestorage.app",
+      messagingSenderId: "290028500174",
+      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
+      measurementId: "G-6WJ2YNTVPP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const recadoList = document.getElementById("recadoList");
+    const statusEl = document.getElementById("status");
+
+    // Protege acesso apenas para usuários logados
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        carregarRecados();
+      }
+    });
+
+    // Publicar recado
+    window.publicarRecado = async function () {
+      const titulo = document.getElementById("titulo").value.trim();
+      const mensagem = document.getElementById("mensagem").value.trim();
+
+      if (!titulo || !mensagem) {
+        statusEl.textContent = "Preencha todos os campos.";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "recados"), {
+          titulo,
+          mensagem
+        });
+        statusEl.textContent = "Recado publicado com sucesso!";
+        document.getElementById("titulo").value = "";
+        document.getElementById("mensagem").value = "";
+        carregarRecados();
+      } catch (error) {
+        statusEl.textContent = "Erro ao publicar: " + error.message;
+      }
+    };
+
+    // Carregar recados
+    async function carregarRecados() {
+      recadoList.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "recados"));
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const el = document.createElement("div");
+        el.className = "recado";
+        el.innerHTML = `
+          <strong>${data.titulo}</strong><br>
+          ${data.mensagem}<br><br>
+          <button onclick="removerRecado('${docSnap.id}')">🗑️ Remover</button>
+        `;
+        recadoList.appendChild(el);
+      });
+    }
+
+    // Remover recado
+    window.removerRecado = async function (id) {
+      const confirmar = confirm("Deseja realmente remover este recado?");
+      if (confirmar) {
+        await deleteDoc(doc(db, "recados", id));
+        carregarRecados();
+      }
+    };
+
+    // Logout
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "index.html";
+    };
+  </script>
 </body>
 </html>
