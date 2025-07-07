@@ -2,158 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colégio Estadual General Carneiro</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-
-    /* Estilos do cabeçalho */
-    header {
-      background-color: #004aad;
-      color: white;
-      padding: 1rem;
-      position: relative;
-    }
-
-    .logo {
-      max-width: 120px;
-      margin-top: 1rem;
-    }
-
-    h1 {
-      margin-top: 0.5rem;
-    }
-
-    /* Estilos para os links de login/logout */
-    .login-link, .logout-link {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-    }
-
-    /* Estilos do botão Área Administrativa */
-    .login-link a {
-      display: inline-block;
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      background-color: #28a745;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-    }
-
-    /* Estilos do botão logout */
-    .logout-link button {
-      background-color: #dc3545;
-      color: white;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    /* Estilos para os botões principais da página */
-    .buttons {
-      margin: 2rem 0;
-    }
-
-    .button {
-      display: inline-block;
-      margin: 1rem;
-      padding: 1rem 2rem;
-      background-color: #007bff;
-      color: white;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 1.2rem;
-    }
-
-    /* Estilos da área de recados */
-    .recados {
-      max-width: 600px;
-      margin: auto;
-      text-align: left;
-      padding: 1rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .recado {
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      border-bottom: 1px solid #ccc;
-    }
-
-    /* Responsividade para telas menores */
-    @media (max-width: 600px) {
-      /* Reduz o tamanho do botão Área Administrativa */
-      .login-link a {
-        padding: 0.4rem 1rem;      /* Menor padding */
-        font-size: 0.85rem;         /* Menor tamanho de fonte */
-      }
-
-      /* Ajusta o tamanho da logo */
-      .logo {
-        max-width: 100px;
-      }
-
-      /* Ajusta o espaçamento e tamanho da fonte */
-      header {
-        padding: 0.8rem;
-      }
-
-      /* Ajusta o botão de sair */
-      .logout-link button {
-        padding: 0.4rem 1rem;
-        font-size: 0.9rem;
-      }
-
-      /* Ajusta o tamanho dos botões principais */
-      .button {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
-      }
-
-      /* Ajusta a área de recados */
-      .recados {
-        padding: 0.8rem;
-        max-width: 90%;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-    }
+    /* Estilos aqui (mantenha os seus estilos existentes ou ajuste conforme necessário) */
   </style>
 </head>
 <body>
   <header>
-    <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
     <h1>Colégio Estadual General Carneiro</h1>
-
-    <!-- Links para login ou logout dependendo do estado -->
+    <!-- Link para a área administrativa -->
     <div class="login-link" id="loginLink">
       <a href="login.html" class="button">Área Administrativa</a>
     </div>
-    <div class="logout-link" id="logoutLink" style="display: none;">
-      <button onclick="logout()">Sair</button>
-    </div>
   </header>
 
-  <div class="buttons">
-    <a href="https://rco.paas.pr.gov.br/" class="button" target="_blank">Acessar RCO</a>
-    <a href="https://www.registropontoseed.pr.gov.br/" class="button" target="_blank">Registro de Ponto</a>
-    <a href="https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=a8abb4bb284b5b27aa7cb790dc20f80b&redirect_uri=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FObterToken.ashx&scope=central.seguranca.autenticado&state=1751919305&urlCert=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FContent%2Fimg%2FLoginCentral.png&acesso=2070&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&captcha=false" class="button" target="_blank">Contra Cheque</a>
-  </div>
-
-  <div class="recados" id="recados">
+  <!-- Recados -->
+  <div class="recados">
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
   </div>
@@ -163,7 +28,6 @@
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-    // Configurações Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
       authDomain: "colegio-general-carneiro.firebaseapp.com",
@@ -175,10 +39,10 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const auth = getAuth();
     const db = getFirestore(app);
 
-    // Carrega os recados
+    // Carregar recados
     async function carregarRecados() {
       const container = document.getElementById("recadoList");
       container.innerHTML = "Carregando recados...";
@@ -192,7 +56,9 @@
         const data = docSnap.data();
         const el = document.createElement("div");
         el.className = "recado";
-        el.innerHTML = `<strong>${data.titulo}</strong><br>${data.mensagem}`;
+        el.innerHTML = `
+          <strong>${data.titulo}</strong><br>${data.mensagem}
+        `;
         container.appendChild(el);
       });
     }
@@ -200,23 +66,20 @@
     // Verifica autenticação e atualiza os links de login/logout
     onAuthStateChanged(auth, (user) => {
       const loginLink = document.getElementById("loginLink");
-      const logoutLink = document.getElementById("logoutLink");
-
       if (user) {
         loginLink.style.display = "none";
-        logoutLink.style.display = "block";
-        carregarRecados(); // Carrega os recados se o usuário estiver logado
       } else {
         loginLink.style.display = "block";
-        logoutLink.style.display = "none";
       }
     });
 
     // Função de logout
     window.logout = async function () {
       await signOut(auth);
-      window.location.reload(); // Recarrega a página para atualizar a interface
+      window.location.href = "login.html";
     };
+
+    carregarRecados(); // Carrega os recados na inicialização
   </script>
 </body>
 </html>
