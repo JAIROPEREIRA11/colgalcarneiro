@@ -25,18 +25,18 @@
     h1 {
       margin-top: 0.5rem;
     }
-    .admin-link {
+    .admin-link, .logout-link {
       position: absolute;
       top: 1rem;
       right: 1rem;
     }
-    .admin-link a {
-      background-color: #28a745;
+    .logout-link button {
+      background-color: #dc3545;
       color: white;
-      padding: 0.6rem 1.2rem;
+      padding: 0.5rem 1rem;
+      border: none;
       border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.95rem;
+      cursor: pointer;
     }
     .buttons {
       margin: 2rem 0;
@@ -71,8 +71,13 @@
   <header>
     <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
     <h1>Colégio Estadual General Carneiro</h1>
-    <div class="admin-link">
+
+    <!-- Links para login ou logout dependendo do estado -->
+    <div class="admin-link" id="loginLink">
       <a href="login.html">Área Administrativa</a>
+    </div>
+    <div class="logout-link" id="logoutLink" style="display: none;">
+      <button onclick="logout()">Sair</button>
     </div>
   </header>
 
@@ -86,6 +91,42 @@
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
+      authDomain: "colegio-general-carneiro.firebaseapp.com",
+      projectId: "colegio-general-carneiro",
+      storageBucket: "colegio-general-carneiro.firebasestorage.app",
+      messagingSenderId: "290028500174",
+      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
+      measurementId: "G-6WJ2YNTVPP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      const loginLink = document.getElementById("loginLink");
+      const logoutLink = document.getElementById("logoutLink");
+
+      if (user) {
+        loginLink.style.display = "none";
+        logoutLink.style.display = "block";
+      } else {
+        loginLink.style.display = "block";
+        logoutLink.style.display = "none";
+      }
+    });
+
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.reload();
+    };
+  </script>
 
   <script type="module" src="firebase.js"></script>
 </body>

@@ -1,6 +1,7 @@
-// Importa os módulos necessários do Firebase
+// Importa os módulos do Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
 // Configurações do seu projeto Firebase
 const firebaseConfig = {
@@ -13,25 +14,57 @@ const firebaseConfig = {
   measurementId: "G-6WJ2YNTVPP"
 };
 
-// Inicializa o Firebase
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// Função para buscar recados e exibir no site
-async function carregarRecados() {
-  const recadosRef = collection(db, "recados");
-  const snapshot = await getDocs(recadosRef);
+// Função principal
+function carregarRecadosComAuth() {
   const container = document.getElementById("recadoList");
-  container.innerHTML = "";
-  
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    const el = document.createElement("div");
-    el.className = "recado";
-    el.innerHTML = `<strong>${data.titulo}</strong><br>${data.mensagem}`;
-    container.appendChild(el);
+  container.innerHTML = "Verificando autenticação...";
+
+  onAuthStateChanged(auth, async (user) => {
+    container.innerHTML = ""; // Limpa o conteúdo
+
+    const recadosRef = collection(db, "recados");
+    const snapshot = await getDocs(recadosRef);
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const el = document.createElement("div");
+      el.className = "recado";
+      el.innerHTML = `
+        <strong>${data.titulo}</strong><br>${data.mensagem}
+      `;
+
+      // Se o usuário estiver logado, mostra botão de remover
+      if (user) {
+        const btn = document.createElement("button");
+        btn.textContent = "🗑️ Remover";
+        btn.style.marginTop = "0.5rem";
+        btn.onclick = () => removerRecado(docSnap.id);
+        el.appendChild(document.createElement("br"));
+        el.appendChild(btn);
+      }
+
+      container.appendChild(el);
+    });
+
+    if (!user) {
+      console.log("Usuário não autenticado – modo leitura.");
+    }
   });
 }
 
-// Chama a função assim que o script carregar
-carregarRecados();
+// Função para remover um recado
+window.removerRecado = async function (id) {
+  const confirmar = confirm("Tem certeza que deseja apagar este recado?");
+  if (confirmar) {
+    await deleteDoc(doc(db, "recados", id));
+    carregarRecadosComAuth(); // Atualiza a lista
+  }
+};
+
+// Executa ao carregar
+carregarRecadosComAuth();
