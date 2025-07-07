@@ -6,7 +6,7 @@
   <title>Login - Colégio GC</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
       padding: 2rem;
       background-color: #f2f2f2;
@@ -32,6 +32,13 @@
       color: red;
       margin-top: 1rem;
     }
+    #voltarButton {
+      margin-top: 20px;
+      padding: 0.5rem 1.5rem;
+      background-color: #28a745;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -42,6 +49,9 @@
   <button onclick="login()">Entrar</button>
 
   <p id="erro"></p>
+
+  <!-- Botão de Voltar ao Site -->
+  <button id="voltarButton" onclick="voltarPagina()">Voltar ao Site</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -60,6 +70,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // Função de login
     window.login = async function () {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
@@ -71,6 +82,11 @@
       } catch (error) {
         erroEl.textContent = "Erro no login: " + error.message;
       }
+    };
+
+    // Função para voltar ao site
+    window.voltarPagina = function () {
+      window.location.href = "index.html"; // Redireciona para a página inicial
     };
   </script>
 
