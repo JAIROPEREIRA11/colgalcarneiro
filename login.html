@@ -1,79 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Colégio GC</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2rem;
-      background-color: #f2f2f2;
-    }
-    input {
-      display: block;
-      margin: 1rem auto;
-      padding: 0.5rem;
-      width: 220px;
-    }
-    button {
-      padding: 0.5rem 1.5rem;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #erro {
-      color: red;
-      margin-top: 1rem;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Administração de Recados</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase-admin.js"></script>
 </head>
 <body>
+  <header>
+    <h1>Login - Administração de Recados</h1>
+  </header>
 
-  <h1>Login - Administração de Recados</h1>
+  <section class="recados">
+    <input type="email" id="email" placeholder="Seu Email" aria-label="Email de Login">
+    <input type="password" id="senha" placeholder="Sua Senha" aria-label="Senha de Login">
+    <button onclick="login()" aria-label="Entrar">Entrar</button>
+    <p id="erro"></p>
+  </section>
 
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="senha" placeholder="Senha" />
-  <button onclick="login()">Entrar</button>
-
-  <p id="erro"></p>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
-      authDomain: "colegio-general-carneiro.firebaseapp.com",
-      projectId: "colegio-general-carneiro",
-      storageBucket: "colegio-general-carneiro.firebasestorage.app",
-      messagingSenderId: "290028500174",
-      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
-      measurementId: "G-6WJ2YNTVPP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    window.login = async function () {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-      const erroEl = document.getElementById("erro");
-
-      try {
-        await signInWithEmailAndPassword(auth, email, senha);
-        window.location.href = "admin.html"; // Redireciona após login bem-sucedido
-      } catch (error) {
-        erroEl.textContent = "Erro no login: " + error.message;
-      }
-    };
-  </script>
-
+  <a href="index.html" class="button-link">Voltar ao Site</a>
 </body>
 </html>

@@ -1,176 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administração de Recados</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    .form-container {
-      background-color: #f8f9fa;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
-    }
-    input, textarea {
-      width: 80%;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .file-preview {
-      margin-top: 20px;
-    }
-    .file-preview img, .file-preview embed {
-      width: 100%;
-      max-width: 500px;
-      height: auto;
-      margin-top: 10px;
-      border-radius: 6px;
-    }
-    .file-preview a {
-      display: block;
-      margin-top: 10px;
-      text-decoration: none;
-      color: #007bff;
-    }
-    .recado {
-      background-color: #f1f1f1;
-      padding: 1rem;
-      margin-top: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-      text-align: left;
-    }
-    .recado img {
-      width: 100%;
-      max-width: 500px;
-      border-radius: 6px;
-      margin-top: 10px;
-    }
-    .recado embed {
-      width: 100%;
-      max-width: 500px;
-      height: 500px;
-      margin-top: 10px;
-      border-radius: 6px;
-    }
-    .recado p {
-      margin-top: 10px;
-      font-size: 1.1rem;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase-admin.js"></script>
 </head>
 <body>
+  <header>
+    <h1>📢 Painel Administrativo</h1>
+    <button onclick="logout()" aria-label="Sair da conta">Sair</button> <!-- Novo: Botão de logout -->
+  </header>
 
-  <h1>Painel Administrativo</h1>
-
-  <div class="form-container">
+  <section class="recados">
     <h2>📢 Criar Recado</h2>
-    <input type="text" id="titulo" placeholder="Título do Recado" />
-    <textarea id="mensagem" placeholder="Escreva o recado..." rows="5"></textarea>
-    <input type="file" id="fileUpload" name="fileUpload" />
-    <button onclick="publicarRecado()">Publicar Recado</button>
+    <input type="text" id="titulo" placeholder="Título do Recado" aria-label="Título do Recado">
+    <textarea id="mensagem" placeholder="Mensagem do Recado" aria-label="Mensagem do Recado"></textarea>
+    <button onclick="publicarRecado()" aria-label="Publicar Recado">Publicar Recado</button>
     <p id="status"></p>
-  </div>
+  </section>
 
-  <div id="fileList"></div>
-  <button onclick="window.location.href='index.html'">Voltar ao Site</button>
+  <section class="recados"> <!-- Nova seção: Lista de recados com remoção -->
+    <h2>📋 Recados Existentes</h2>
+    <div id="recadoListAdmin">Carregando recados...</div>
+  </section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
-      authDomain: "colegio-general-carneiro.firebaseapp.com",
-      projectId: "colegio-general-carneiro",
-      storageBucket: "colegio-general-carneiro.firebasestorage.app",
-      messagingSenderId: "290028500174",
-      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
-      measurementId: "G-6WJ2YNTVPP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    // Verifica login
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
-      }
-    });
-
-    // Função para publicar recado
-    window.publicarRecado = async function () {
-      const titulo = document.getElementById("titulo").value;
-      const mensagem = document.getElementById("mensagem").value;
-      const status = document.getElementById("status");
-      const fileInput = document.getElementById("fileUpload");
-      const file = fileInput.files[0];
-
-      if (!titulo || !mensagem) {
-        status.textContent = "❌ Preencha todos os campos!";
-        return;
-      }
-
-      try {
-        let fileUrl = null;
-
-        // Se um arquivo foi selecionado, faz o upload
-        if (file) {
-          const fileRef = ref(storage, 'uploads/' + file.name);
-          await uploadBytes(fileRef, file);
-          fileUrl = await getDownloadURL(fileRef);
-        }
-
-        // Publica o recado no Firestore
-        await addDoc(collection(db, "recados"), {
-          titulo,
-          mensagem,
-          data: new Date(),
-          usuarioId: auth.currentUser.uid,
-          fileUrl: fileUrl || null // Armazena o URL do arquivo se existir
-        });
-
-        status.textContent = "✅ Recado publicado com sucesso!";
-        document.getElementById("titulo").value = "";
-        document.getElementById("mensagem").value = "";
-        document.getElementById("fileUpload").value = "";
-      } catch (e) {
-        status.textContent = "❌ Erro ao publicar: " + e.message;
-      }
-    };
-
-    // Função de logout
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "login.html";
-    };
-  </script>
-
+  <a href="index.html" class="button-link">Voltar ao Site</a>
 </body>
 </html>

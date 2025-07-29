@@ -1,80 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Colégio Estadual General Carneiro</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase-admin.js"></script> <!-- Atualizado: Usa o script unificado -->
 </head>
 <body>
-
   <header>
-    <img src="assets/brasao.jpeg" alt="Brasão" class="logo"/>
+    <img src="logo.png" alt="Logo do Colégio" class="logo"> <!-- Assumindo que há um logo; ajuste se necessário -->
     <h1>Colégio Estadual General Carneiro</h1>
-    <div class="login-link" id="loginLink">
-      <a href="login.html" class="button">Área Administrativa</a>
-    </div>
+    <a href="login.html" class="button-link">Área Administrativa</a>
   </header>
 
-  <div class="buttons" id="accessButtons">
-    <a href="https://rco.paas.pr.gov.br/" class="button-link" target="_blank">Acessar RCO</a>
-    <a href="https://www.registropontoseed.pr.gov.br/" class="button-link" target="_blank">Registro de Ponto</a>
-    <a href="https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=a8abb4bb284b5b27aa7cb790dc20f80b&redirect_uri=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FObterToken.ashx&scope=central.seguranca.autenticado&state=1751919305&urlCert=https://certauth-cs.identidadedigital.pr.gov.br&dnsCidadao=https://cidadao-cs.identidadedigital.pr.gov.br/centralcidadao&origemRequisicao=portal&loginPadrao=btnCentral&labelCentral=CPF&modulosDeAutenticacao=btnGovbr,btnCertificado,btnSms,btnCpf,btnEmailToken,btnCentral&urlLogo=https%3A%2F%2Fwwws.portaldoservidor.pr.gov.br%2Fcchequenet%2FContent%2Fimg%2FLoginCentral.png&acesso=2070&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&captcha=false" class="button-link" target="_blank">Contra Cheque</a>
-  </div>
+  <section class="buttons">
+    <a href="https://rco.seduc.mt.gov.br/" class="button-link">Acessar RCO</a>
+    <a href="https://ponto.seduc.mt.gov.br/" class="button-link">Registro de Ponto</a>
+    <a href="https://contracheque.mt.gov.br/" class="button-link">Contra Cheque</a>
+  </section>
 
-  <div class="recados">
+  <section class="recados">
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
-  </div>
+  </section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
-      authDomain: "colegio-general-carneiro.firebaseapp.com",
-      projectId: "colegio-general-carneiro",
-      storageBucket: "colegio-general-carneiro.firebasestorage.app",
-      messagingSenderId: "290028500174",
-      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
-      measurementId: "G-6WJ2YNTVPP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-
-    // Função para carregar recados
-    async function carregarRecados() {
-      const container = document.getElementById("recadoList");
-      container.innerHTML = "Carregando recados...";
-
-      const recadosRef = collection(db, "recados");
-      const snapshot = await getDocs(recadosRef);
-
-      container.innerHTML = ""; // Limpa a mensagem de carregamento
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const el = document.createElement("div");
-        el.className = "recado";
-        el.innerHTML = `
-          <strong>${data.titulo}</strong><br>${data.mensagem}
-        `;
-        container.appendChild(el);
-      });
-    }
-
-    // Verifica login
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
-      }
-    });
-
-    carregarRecados();
+  <script>
+    // Chama a função unificada para carregar recados
+    carregarRecadosComAuth();
   </script>
-
 </body>
 </html>

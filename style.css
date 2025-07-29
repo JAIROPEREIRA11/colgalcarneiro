@@ -12,6 +12,22 @@ header {
   color: white;
   padding: 1rem;
   position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+header button:hover {
+  background-color: #cc0000;
 }
 
 .logo {
@@ -51,12 +67,48 @@ h1 {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
+.recados input, .recados textarea {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.recados button {
+  padding: 0.8rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.recados button:hover {
+  background-color: #218838;
+}
+
 .recado {
   margin-bottom: 1rem;
   padding: 1rem;
   background-color: #f9f9f9;
   border-radius: 6px;
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.recado button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  width: auto;
+}
+
+.recado button:hover {
+  background-color: #c82333;
 }
 
 /* Estilo do formulário de upload */
@@ -68,6 +120,7 @@ h1 {
 @media (max-width: 600px) {
   header {
     padding: 0.8rem;
+    flex-direction: column;
   }
 
   .button-link {
