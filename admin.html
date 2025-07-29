@@ -1,192 +1,36 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administração de Recados</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    input {
-      display: block;
-      margin: 1rem auto;
-      padding: 0.5rem;
-      width: 220px;
-    }
-    textarea {
-      display: block;
-      margin: 1rem auto;
-      padding: 0.5rem;
-      width: 220px;
-      height: 100px;
-    }
-    button {
-      padding: 0.5rem 1.5rem;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #status {
-      margin-top: 1rem;
-      color: green;
-    }
-    .recado {
-      background-color: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin: 1rem auto;
-      width: 80%;
-      text-align: left;
-      border-radius: 8px;
-    }
-    .recado button {
-      background-color: red;
-      padding: 0.5rem 1rem;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .recado button:hover {
-      background-color: darkred;
-    }
-    #voltarButton {
-      background-color: #28a745;
-      padding: 0.5rem 1.5rem;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Recados</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase-admin.js"></script>
+  <script type="module" src="firebase.js"></script>
 </head>
 <body>
+  <header>
+    <h1>Painel de Recados</h1>
+  </header>
 
-  <h1>Painel de Recados</h1>
+  <form id="recadoForm" style="max-width: 600px; margin: auto; padding: 1rem;">
+    <label for="titulo">Título:</label><br>
+    <input type="text" id="titulo" required><br><br>
+    <label for="mensagem">Mensagem:</label><br>
+    <textarea id="mensagem" required></textarea><br><br>
+    <label for="anexo">Anexar Arquivo (PDF, imagem, doc, etc.):</label><br>
+    <input type="file" id="anexo" accept=".pdf,.jpg,.png,.docx,.xlsx,.csv"><br><br> <!-- Adicionado -->
+    <button type="button" onclick="publicarRecado()">Incluir Recado</button>
+    <p id="status"></p>
+  </form>
 
-  <input type="text" id="titulo" placeholder="Título do recado" />
-  <textarea id="mensagem" placeholder="Escreva o recado..."></textarea>
-  <button onclick="publicarRecado()">Incluir Recado</button>
-  <p id="status"></p>
+  <div id="recadoList" class="recados">
+    Carregando recados...
+  </div>
 
-  <div id="recadoList">Carregando recados...</div>
+  <button class="logout-link" onclick="auth.signOut().then(() => window.location.href = 'index.html')">Sair</button>
 
-  <!-- Botão de logout -->
-  <button id="logoutButton" onclick="logout()">Sair</button>
-
-  <!-- Botão de voltar após logout -->
-  <button id="voltarButton" onclick="voltarPagina()">Voltar ao Site</button>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
-      authDomain: "colegio-general-carneiro.firebaseapp.com",
-      projectId: "colegio-general-carneiro",
-      storageBucket: "colegio-general-carneiro.firebasestorage.app",
-      messagingSenderId: "290028500174",
-      appId: "1:290028500174:web:aa96bf74f6a08aa9d9cc9f",
-      measurementId: "G-6WJ2YNTVPP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-
-    // Função de logout
-    window.logout = async function () {
-      await signOut(auth);
-      document.getElementById("logoutButton").style.display = "none"; // Esconde o botão de logout
-      document.getElementById("voltarButton").style.display = "block"; // Exibe o botão de voltar
-    };
-
-    // Função para voltar à página inicial
-    window.voltarPagina = function () {
-      window.location.href = "index.html"; // Redireciona para a página inicial
-    };
-
-    // Função para publicar o recado
-    window.publicarRecado = async function () {
-      const titulo = document.getElementById("titulo").value;
-      const mensagem = document.getElementById("mensagem").value;
-      const status = document.getElementById("status");
-
-      if (!titulo || !mensagem) {
-        status.textContent = "❌ Preencha todos os campos.";
-        return;
-      }
-
-      if (!auth.currentUser) {
-        status.textContent = "❌ Você precisa estar logado para publicar.";
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, "recados"), {
-          titulo,
-          mensagem,
-          data: new Date(),
-          usuarioId: auth.currentUser.uid
-        });
-        status.textContent = "✅ Recado publicado com sucesso!";
-        document.getElementById("titulo").value = "";
-        document.getElementById("mensagem").value = "";
-        carregarRecados(); // Atualiza a lista de recados
-      } catch (e) {
-        status.textContent = "❌ Erro ao publicar: " + e.message;
-      }
-    };
-
-    // Função para carregar os recados
-    async function carregarRecados() {
-      const container = document.getElementById("recadoList");
-      container.innerHTML = "Carregando recados...";
-
-      const recadosRef = collection(db, "recados");
-      const snapshot = await getDocs(recadosRef);
-
-      container.innerHTML = ""; // Limpa a mensagem de carregamento
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const el = document.createElement("div");
-        el.className = "recado";
-        el.innerHTML = `
-          <strong>${data.titulo}</strong><br>${data.mensagem}
-          <br>
-          <button onclick="removerRecado('${docSnap.id}')">🗑️ Remover</button>
-        `;
-        container.appendChild(el);
-      });
-    }
-
-    // Função para remover o recado
-    window.removerRecado = async function (id) {
-      const confirmar = confirm("Deseja realmente remover este recado?");
-      if (confirmar) {
-        await deleteDoc(doc(db, "recados", id));
-        carregarRecados(); // Atualiza a lista de recados
-      }
-    };
-
-    // Verificação de autenticação
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
-      }
-    });
-
-    carregarRecados(); // Carrega os recados ao carregar a página
-  </script>
+  <a href="index.html">Voltar ao Site</a>
 
 </body>
 </html>

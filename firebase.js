@@ -2,6 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getStorage, ref, deleteObject } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"; // Adicionado para Storage
 
 // Configurações do seu projeto Firebase
 const firebaseConfig = {
@@ -18,6 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app); // Adicionado
 
 // Função principal
 function carregarRecadosComAuth() {
@@ -51,12 +53,17 @@ function carregarRecadosComAuth() {
         <strong>${data.titulo}</strong><br>${data.mensagem}
       `;
 
+      // Exibe link de anexo se existir
+      if (data.anexoUrl) {
+        el.innerHTML += `<br><a href="${data.anexoUrl}" target="_blank" download>Baixar Anexo: ${data.anexoNome || 'Arquivo'}</a>`;
+      }
+
       // Se o usuário estiver logado, mostra botão de remover
       if (user) {
         const btn = document.createElement("button");
         btn.textContent = "🗑️ Remover";
         btn.style.marginTop = "0.5rem";
-        btn.onclick = () => removerRecado(docSnap.id);
+        btn.onclick = () => removerRecado(docSnap.id, data.anexoPath); // Passa o path do anexo se existir
         el.appendChild(document.createElement("br"));
         el.appendChild(btn);
       }
@@ -67,9 +74,14 @@ function carregarRecadosComAuth() {
 }
 
 // Função para remover um recado
-window.removerRecado = async function (id) {
+window.removerRecado = async function (id, anexoPath) {
   const confirmar = confirm("Tem certeza que deseja apagar este recado?");
   if (confirmar) {
+    // Deleta o arquivo do Storage se existir
+    if (anexoPath) {
+      const storageRef = ref(storage, anexoPath);
+      await deleteObject(storageRef).catch((error) => console.error("Erro ao deletar anexo:", error));
+    }
     await deleteDoc(doc(db, "recados", id));
     carregarRecadosComAuth(); // Atualiza a lista de recados
   }

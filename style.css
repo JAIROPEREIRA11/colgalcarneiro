@@ -70,6 +70,24 @@ h1 {
   border-bottom: 1px solid #ccc;
 }
 
+.recado a { /* Adicionado para links de anexo */
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.recado a:hover {
+  text-decoration: underline;
+}
+
+input[type="file"] { /* Adicionado para input de anexo */
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+}
+
 /* Responsividade para telas menores */
 @media (max-width: 600px) {
   .login-link a {
@@ -102,5 +120,9 @@ h1 {
 
   h1 {
     font-size: 1.5rem;
+  }
+
+  input[type="file"] {
+    font-size: 0.9rem;
   }
 }
