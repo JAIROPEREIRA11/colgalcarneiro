@@ -10,18 +10,19 @@
 <body>
   <header>
     <h1>📢 Painel Administrativo</h1>
-    <button onclick="logout()" aria-label="Sair da conta">Sair</button> <!-- Novo: Botão de logout -->
+    <button onclick="logout()" aria-label="Sair da conta">Sair</button>
   </header>
 
   <section class="recados">
     <h2>📢 Criar Recado</h2>
     <input type="text" id="titulo" placeholder="Título do Recado" aria-label="Título do Recado">
     <textarea id="mensagem" placeholder="Mensagem do Recado" aria-label="Mensagem do Recado"></textarea>
+    <input type="file" id="arquivo" accept="image/*,application/pdf" aria-label="Anexar Foto ou PDF"> <!-- Novo: Upload de arquivo -->
     <button onclick="publicarRecado()" aria-label="Publicar Recado">Publicar Recado</button>
     <p id="status"></p>
   </section>
 
-  <section class="recados"> <!-- Nova seção: Lista de recados com remoção -->
+  <section class="recados">
     <h2>📋 Recados Existentes</h2>
     <div id="recadoListAdmin">Carregando recados...</div>
   </section>

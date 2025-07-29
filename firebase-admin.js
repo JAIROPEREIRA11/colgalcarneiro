@@ -1,4 +1,4 @@
-// Firebase imports (Atualizado para versão 10.12.4 para maior estabilidade)
+// Firebase imports (Versão 10.12.4)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
   getAuth,
@@ -15,8 +15,14 @@ import {
   doc,
   Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js"; // Novo: Para Storage
 
-// Sua configuração do Firebase
+// Configuração Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
   authDomain: "colegio-general-carneiro.firebaseapp.com",
@@ -30,8 +36,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app); // Novo: Instância de Storage
 
-// Função de login
+// Função de login (sem alterações)
 window.login = async function () {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
@@ -45,57 +52,82 @@ window.login = async function () {
   }
 };
 
-// Protege admin.html (redireciona se não estiver logado)
+// Protege admin.html
 if (window.location.pathname.includes("admin.html")) {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
       window.location.href = "login.html";
     } else {
-      // Carrega recados na admin se logado
       carregarRecadosAdmin();
     }
   });
 }
 
-// Função para publicar recado (Consertado: Adicionada checagem de auth e Timestamp)
+// Função para publicar recado (Modificado: Adicionado upload de arquivo)
 window.publicarRecado = async function () {
   const titulo = document.getElementById("titulo").value;
   const mensagem = document.getElementById("mensagem").value;
+  const arquivo = document.getElementById("arquivo").files[0];
   const status = document.getElementById("status");
 
   if (!titulo || !mensagem) {
-    status.textContent = "❌ Preencha todos os campos para publicar o recado.";
+    status.textContent = "❌ Preencha título e mensagem.";
     setTimeout(() => { status.textContent = ""; }, 5000);
     return;
   }
 
   if (!auth.currentUser) {
-    status.textContent = "❌ Você precisa estar logado para publicar.";
+    status.textContent = "❌ Você precisa estar logado.";
     return;
   }
 
   try {
-    await addDoc(collection(db, "recados"), {
+    status.textContent = "📤 Publicando...";
+    const recadoRef = await addDoc(collection(db, "recados"), {
       titulo,
       mensagem,
-      data: Timestamp.now(), // Usa Timestamp para datas precisas
-      usuarioId: auth.currentUser.uid
+      data: Timestamp.now(),
+      usuarioId: auth.currentUser.uid,
+      arquivoURL: null, // Inicial
+      arquivoTipo: null
     });
-    status.textContent = "✅ Recado publicado com sucesso!";
+
+    let arquivoURL = null;
+    let arquivoTipo = null;
+
+    if (arquivo) {
+      if (arquivo.size > 5 * 1024 * 1024) { // Máx 5MB
+        throw new Error("Arquivo muito grande (máx 5MB).");
+      }
+      if (!arquivo.type.startsWith('image/') && arquivo.type !== 'application/pdf') {
+        throw new Error("Apenas imagens ou PDFs permitidos.");
+      }
+
+      const fileRef = storageRef(storage, `recados/${recadoRef.id}/${arquivo.name}`);
+      await uploadBytes(fileRef, arquivo);
+      arquivoURL = await getDownloadURL(fileRef);
+      arquivoTipo = arquivo.type;
+
+      // Atualiza o doc com URL
+      await doc(db, "recados", recadoRef.id).update({ arquivoURL, arquivoTipo });
+    }
+
+    status.textContent = "✅ Publicado com sucesso!";
     document.getElementById("titulo").value = "";
     document.getElementById("mensagem").value = "";
+    document.getElementById("arquivo").value = "";
     setTimeout(() => { status.textContent = ""; }, 5000);
-    carregarRecadosAdmin(); // Atualiza a lista na admin
+    carregarRecadosAdmin();
   } catch (e) {
-    status.textContent = "❌ Erro ao publicar: " + e.message;
+    status.textContent = "❌ Erro: " + e.message;
     setTimeout(() => { status.textContent = ""; }, 5000);
   }
 };
 
-// Função para carregar recados na admin (Nova: Lista com opção de remoção)
+// Função para carregar recados na admin (Modificado: Suporte a arquivos)
 async function carregarRecadosAdmin() {
   const container = document.getElementById("recadoListAdmin");
-  if (!container) return; // Evita erro se não existir
+  if (!container) return;
 
   container.innerHTML = "Carregando recados...";
 
@@ -116,6 +148,24 @@ async function carregarRecadosAdmin() {
       el.innerHTML = `
         <strong>${data.titulo}</strong><br>${data.mensagem}
       `;
+
+      if (data.arquivoURL) {
+        el.appendChild(document.createElement("br"));
+        if (data.arquivoTipo.startsWith('image/')) {
+          const img = document.createElement("img");
+          img.src = data.arquivoURL;
+          img.alt = "Anexo";
+          img.className = "anexo-img";
+          el.appendChild(img);
+        } else {
+          const link = document.createElement("a");
+          link.href = data.arquivoURL;
+          link.textContent = "Baixar Arquivo (PDF)";
+          link.target = "_blank";
+          el.appendChild(link);
+        }
+      }
+
       const btn = document.createElement("button");
       btn.textContent = "🗑️ Remover";
       btn.style.marginTop = "0.5rem";
@@ -125,19 +175,19 @@ async function carregarRecadosAdmin() {
       container.appendChild(el);
     });
   } catch (e) {
-    container.innerHTML = "Erro ao carregar recados: " + e.message;
+    container.innerHTML = "Erro ao carregar: " + e.message;
   }
 }
 
-// Função para remover um recado (Unificada e otimizada)
+// Função para remover recado (sem alterações)
 window.removerRecado = async function (id) {
   const confirmar = confirm("Tem certeza que deseja apagar este recado?");
   if (confirmar) {
     try {
       await deleteDoc(doc(db, "recados", id));
-      carregarRecadosAdmin(); // Atualiza na admin
+      carregarRecadosAdmin();
       if (window.location.pathname.includes("index.html")) {
-        carregarRecadosComAuth(); // Atualiza na index se aplicável
+        carregarRecadosComAuth();
       }
     } catch (e) {
       alert("Erro ao remover: " + e.message);
@@ -145,7 +195,7 @@ window.removerRecado = async function (id) {
   }
 };
 
-// Função para carregar recados na index (Mantida e otimizada)
+// Função para carregar recados na index (Modificado: Suporte a arquivos)
 window.carregarRecadosComAuth = async function () {
   const container = document.getElementById("recadoList");
   if (!container) return;
@@ -172,7 +222,24 @@ window.carregarRecadosComAuth = async function () {
           <strong>${data.titulo}</strong><br>${data.mensagem}
         `;
 
-        if (user) { // Mostra remoção se logado
+        if (data.arquivoURL) {
+          el.appendChild(document.createElement("br"));
+          if (data.arquivoTipo.startsWith('image/')) {
+            const img = document.createElement("img");
+            img.src = data.arquivoURL;
+            img.alt = "Anexo";
+            img.className = "anexo-img";
+            el.appendChild(img);
+          } else {
+            const link = document.createElement("a");
+            link.href = data.arquivoURL;
+            link.textContent = "Baixar Arquivo (PDF)";
+            link.target = "_blank";
+            el.appendChild(link);
+          }
+        }
+
+        if (user) {
           const btn = document.createElement("button");
           btn.textContent = "🗑️ Remover";
           btn.style.marginTop = "0.5rem";
@@ -184,12 +251,12 @@ window.carregarRecadosComAuth = async function () {
         container.appendChild(el);
       });
     } catch (e) {
-      container.innerHTML = "Erro ao carregar recados: " + e.message;
+      container.innerHTML = "Erro ao carregar: " + e.message;
     }
   });
 };
 
-// Função de logout (Nova: Para sair da admin)
+// Função de logout (sem alterações)
 window.logout = function () {
   signOut(auth).then(() => {
     window.location.href = "login.html";
@@ -198,7 +265,7 @@ window.logout = function () {
   });
 };
 
-// Executa carregamento automático na index
+// Executa carregamento na index
 if (window.location.pathname.includes("index.html")) {
   carregarRecadosComAuth();
 }

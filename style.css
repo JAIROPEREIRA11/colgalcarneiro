@@ -1,4 +1,4 @@
-/* Estilos gerais */
+/* Estilos gerais (sem alterações principais) */
 body {
   font-family: Arial, sans-serif;
   background-color: #f2f2f2;
@@ -111,12 +111,29 @@ h1 {
   background-color: #c82333;
 }
 
-/* Estilo do formulário de upload */
-.file-item {
-  margin-top: 1rem;
+.anexo-img { /* Novo: Estilo para thumbnails de imagens */
+  max-width: 200px;
+  height: auto;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
 
-/* Responsividade para telas menores */
+.recado a { /* Novo: Estilo para links de download */
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.recado a:hover {
+  background-color: #0056b3;
+}
+
+/* Responsividade */
 @media (max-width: 600px) {
   header {
     padding: 0.8rem;
@@ -126,5 +143,9 @@ h1 {
   .button-link {
     width: 100%;
     font-size: 1rem;
+  }
+
+  .anexo-img {
+    max-width: 100%;
   }
 }
