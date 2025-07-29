@@ -15,51 +15,63 @@ header {
 }
 
 .logo {
-  max-width: 100%;
-  height: auto;
+  max-width: 120px;
   margin-top: 1rem;
 }
 
 h1 {
   margin-top: 0.5rem;
-  font-size: 1.5rem;
 }
 
-/* Tabela de Horário */
-table {
-  width: 100%;
-  border-collapse: collapse;
+.buttons {
+  margin-top: 2rem;
+}
+
+.button-link {
+  padding: 1rem 2rem;
+  margin: 1rem;
+  background-color: #007bff;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.button-link:hover {
+  background-color: #0056b3;
+}
+
+.recados {
+  max-width: 600px;
+  margin: 2rem auto;
+  text-align: left;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.recado {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Estilo do formulário de upload */
+.file-item {
   margin-top: 1rem;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-}
+/* Responsividade para telas menores */
+@media (max-width: 600px) {
+  header {
+    padding: 0.8rem;
+  }
 
-th {
-  background-color: #007bff;
-  color: white;
-}
-
-td[contenteditable="true"]:empty:before {
-  content: "Clique para editar";
-  color: #888;
-  font-style: italic;
-}
-
-td {
-  background-color: #f9f9f9;
-}
-
-td[contenteditable="true"]:focus {
-  background-color: #e7f3fe;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  table {
-    font-size: 0.9rem;
+  .button-link {
+    width: 100%;
+    font-size: 1rem;
   }
 }

@@ -16,6 +16,7 @@
     </div>
   </header>
 
+  <!-- Links úteis -->
   <div class="buttons" id="accessButtons">
     <a href="https://rco.paas.pr.gov.br/" class="button-link" target="_blank">Acessar RCO</a>
     <a href="https://www.registropontoseed.pr.gov.br/" class="button-link" target="_blank">Registro de Ponto</a>
@@ -25,22 +26,11 @@
   <div class="recados">
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
-
-    <!-- Formulário para Upload de Arquivos -->
-    <h2>📂 Upload de Arquivos</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" id="fileUpload" name="fileUpload" multiple />
-      <button type="submit">Enviar Arquivos</button>
-    </form>
-
-    <div id="fileList">
-      <!-- Arquivos enviados aparecerão aqui -->
-    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -77,47 +67,10 @@
       });
     }
 
-    // Função para fazer upload de arquivos
-    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-      
-      const fileInput = document.getElementById("fileUpload");
-      const files = fileInput.files;
-
-      if (files.length === 0) {
-        alert("Por favor, selecione um arquivo para enviar.");
-        return;
-      }
-
-      // Exibindo os arquivos na tela
-      const fileList = document.getElementById("fileList");
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileElement = document.createElement("div");
-        fileElement.innerHTML = `<a href="${URL.createObjectURL(file)}" target="_blank">${file.name}</a>`;
-        fileList.appendChild(fileElement);
-      }
-      
-      // Aqui, se você estiver utilizando Firebase ou outro serviço para armazenar, pode enviar os arquivos para o armazenamento.
-      // Exemplo de upload para Firebase Storage ou outro servidor pode ser adicionado aqui.
-
-    });
-
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "login.html"; // Redireciona para login após logout
-    };
-
+    // Verifica login
     onAuthStateChanged(auth, (user) => {
-      const loginLink = document.getElementById("loginLink");
-      const accessButtons = document.getElementById("accessButtons");
-
-      if (user) {
-        loginLink.style.display = "none"; // Esconde o link de login se estiver logado
-        accessButtons.style.display = "none"; // Esconde os botões de acesso se estiver logado
-      } else {
-        loginLink.style.display = "block"; // Exibe o link de login se não estiver logado
-        accessButtons.style.display = "block"; // Exibe os botões de acesso se não estiver logado
+      if (!user) {
+        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
       }
     });
 

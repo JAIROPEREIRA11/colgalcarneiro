@@ -32,16 +32,10 @@
       color: red;
       margin-top: 1rem;
     }
-    #voltarButton {
-      margin-top: 20px;
-      padding: 0.5rem 1.5rem;
-      background-color: #28a745;
-      border-radius: 5px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
+
   <h1>Login - Administração de Recados</h1>
 
   <input type="email" id="email" placeholder="Email" />
@@ -49,9 +43,6 @@
   <button onclick="login()">Entrar</button>
 
   <p id="erro"></p>
-
-  <!-- Botão de Voltar ao Site -->
-  <button id="voltarButton" onclick="voltarPagina()">Voltar ao Site</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -82,11 +73,6 @@
       } catch (error) {
         erroEl.textContent = "Erro no login: " + error.message;
       }
-    };
-
-    // Função para voltar ao site
-    window.voltarPagina = function () {
-      window.location.href = "index.html"; // Redireciona para a página inicial
     };
   </script>
 
