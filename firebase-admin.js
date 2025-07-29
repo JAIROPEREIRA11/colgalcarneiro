@@ -13,16 +13,17 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  Timestamp
+  Timestamp,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import {
   getStorage,
   ref as storageRef,
   uploadBytes,
   getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js"; // Novo: Para Storage
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
 
-// Configuração Firebase
+// Sua configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
   authDomain: "colegio-general-carneiro.firebaseapp.com",
@@ -36,9 +37,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app); // Novo: Instância de Storage
+const storage = getStorage(app);
 
-// Função de login (sem alterações)
+// Função de login
 window.login = async function () {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
@@ -52,7 +53,7 @@ window.login = async function () {
   }
 };
 
-// Protege admin.html
+// Protege admin.html (redireciona se não estiver logado)
 if (window.location.pathname.includes("admin.html")) {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
@@ -63,7 +64,7 @@ if (window.location.pathname.includes("admin.html")) {
   });
 }
 
-// Função para publicar recado (Modificado: Adicionado upload de arquivo)
+// Função para publicar recado
 window.publicarRecado = async function () {
   const titulo = document.getElementById("titulo").value;
   const mensagem = document.getElementById("mensagem").value;
@@ -82,21 +83,27 @@ window.publicarRecado = async function () {
   }
 
   try {
-    status.textContent = "📤 Publicando...";
+    status.textContent = "📤 Publicando recado...";
+    console.log("Iniciando publicação...");
+
     const recadoRef = await addDoc(collection(db, "recados"), {
       titulo,
       mensagem,
       data: Timestamp.now(),
       usuarioId: auth.currentUser.uid,
-      arquivoURL: null, // Inicial
+      arquivoURL: null,
       arquivoTipo: null
     });
+    console.log("Recado criado com ID:", recadoRef.id);
 
     let arquivoURL = null;
     let arquivoTipo = null;
 
     if (arquivo) {
-      if (arquivo.size > 5 * 1024 * 1024) { // Máx 5MB
+      status.textContent = "📁 Fazendo upload do arquivo...";
+      console.log("Arquivo selecionado:", arquivo.name, arquivo.type);
+
+      if (arquivo.size > 5 * 1024 * 1024) {
         throw new Error("Arquivo muito grande (máx 5MB).");
       }
       if (!arquivo.type.startsWith('image/') && arquivo.type !== 'application/pdf') {
@@ -105,31 +112,41 @@ window.publicarRecado = async function () {
 
       const fileRef = storageRef(storage, `recados/${recadoRef.id}/${arquivo.name}`);
       await uploadBytes(fileRef, arquivo);
+      console.log("Upload concluído no Storage.");
+
       arquivoURL = await getDownloadURL(fileRef);
       arquivoTipo = arquivo.type;
+      console.log("URL gerada:", arquivoURL);
 
-      // Atualiza o doc com URL
-      await doc(db, "recados", recadoRef.id).update({ arquivoURL, arquivoTipo });
+      try {
+        await updateDoc(doc(db, "recados", recadoRef.id), { arquivoURL, arquivoTipo });
+        console.log("Documento atualizado com URL.");
+      } catch (updateError) {
+        console.error("Erro no update do Firestore:", updateError);
+        throw new Error("Falha ao salvar URL no banco: " + updateError.message);
+      }
     }
 
-    status.textContent = "✅ Publicado com sucesso!";
+    status.textContent = "✅ Publicado com sucesso! Recarregue se necessário.";
     document.getElementById("titulo").value = "";
     document.getElementById("mensagem").value = "";
     document.getElementById("arquivo").value = "";
     setTimeout(() => { status.textContent = ""; }, 5000);
     carregarRecadosAdmin();
   } catch (e) {
-    status.textContent = "❌ Erro: " + e.message;
+    console.error("Erro geral na publicação:", e);
+    status.textContent = "❌ Erro: " + e.message + " (Verifique o console para detalhes)";
     setTimeout(() => { status.textContent = ""; }, 5000);
   }
 };
 
-// Função para carregar recados na admin (Modificado: Suporte a arquivos)
+// Função para carregar recados na admin
 async function carregarRecadosAdmin() {
   const container = document.getElementById("recadoListAdmin");
   if (!container) return;
 
   container.innerHTML = "Carregando recados...";
+  console.log("Carregando recados na admin...");
 
   try {
     const recadosRef = collection(db, "recados");
@@ -143,6 +160,8 @@ async function carregarRecadosAdmin() {
 
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
+      console.log("Recado carregado:", data.titulo, "Arquivo URL:", data.arquivoURL);
+
       const el = document.createElement("div");
       el.className = "recado";
       el.innerHTML = `
@@ -151,17 +170,19 @@ async function carregarRecadosAdmin() {
 
       if (data.arquivoURL) {
         el.appendChild(document.createElement("br"));
-        if (data.arquivoTipo.startsWith('image/')) {
+        if (data.arquivoTipo && data.arquivoTipo.startsWith('image/')) {
           const img = document.createElement("img");
           img.src = data.arquivoURL;
           img.alt = "Anexo";
           img.className = "anexo-img";
+          img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem (verifique permissões)'; };
           el.appendChild(img);
         } else {
           const link = document.createElement("a");
           link.href = data.arquivoURL;
           link.textContent = "Baixar Arquivo (PDF)";
           link.target = "_blank";
+          link.onerror = () => { link.textContent = 'Erro ao carregar arquivo'; };
           el.appendChild(link);
         }
       }
@@ -175,11 +196,12 @@ async function carregarRecadosAdmin() {
       container.appendChild(el);
     });
   } catch (e) {
+    console.error("Erro ao carregar recados:", e);
     container.innerHTML = "Erro ao carregar: " + e.message;
   }
 }
 
-// Função para remover recado (sem alterações)
+// Função para remover um recado
 window.removerRecado = async function (id) {
   const confirmar = confirm("Tem certeza que deseja apagar este recado?");
   if (confirmar) {
@@ -195,12 +217,13 @@ window.removerRecado = async function (id) {
   }
 };
 
-// Função para carregar recados na index (Modificado: Suporte a arquivos)
+// Função para carregar recados na index
 window.carregarRecadosComAuth = async function () {
   const container = document.getElementById("recadoList");
   if (!container) return;
 
   container.innerHTML = "Carregando recados...";
+  console.log("Carregando recados na index...");
 
   onAuthStateChanged(auth, async (user) => {
     container.innerHTML = "";
@@ -216,6 +239,8 @@ window.carregarRecadosComAuth = async function () {
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
+        console.log("Recado carregado:", data.titulo, "Arquivo URL:", data.arquivoURL);
+
         const el = document.createElement("div");
         el.className = "recado";
         el.innerHTML = `
@@ -224,17 +249,19 @@ window.carregarRecadosComAuth = async function () {
 
         if (data.arquivoURL) {
           el.appendChild(document.createElement("br"));
-          if (data.arquivoTipo.startsWith('image/')) {
+          if (data.arquivoTipo && data.arquivoTipo.startsWith('image/')) {
             const img = document.createElement("img");
             img.src = data.arquivoURL;
             img.alt = "Anexo";
             img.className = "anexo-img";
+            img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem (verifique permissões)'; };
             el.appendChild(img);
           } else {
             const link = document.createElement("a");
             link.href = data.arquivoURL;
             link.textContent = "Baixar Arquivo (PDF)";
             link.target = "_blank";
+            link.onerror = () => { link.textContent = 'Erro ao carregar arquivo'; };
             el.appendChild(link);
           }
         }
@@ -251,12 +278,13 @@ window.carregarRecadosComAuth = async function () {
         container.appendChild(el);
       });
     } catch (e) {
+      console.error("Erro ao carregar recados:", e);
       container.innerHTML = "Erro ao carregar: " + e.message;
     }
   });
 };
 
-// Função de logout (sem alterações)
+// Função de logout
 window.logout = function () {
   signOut(auth).then(() => {
     window.location.href = "login.html";
@@ -265,7 +293,7 @@ window.logout = function () {
   });
 };
 
-// Executa carregamento na index
+// Executa carregamento automático na index
 if (window.location.pathname.includes("index.html")) {
   carregarRecadosComAuth();
 }

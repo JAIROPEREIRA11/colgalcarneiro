@@ -1,4 +1,4 @@
-/* Estilos gerais (sem alterações principais) */
+/* Estilos gerais */
 body {
   font-family: Arial, sans-serif;
   background-color: #f2f2f2;
@@ -32,11 +32,14 @@ header button:hover {
 
 .logo {
   max-width: 120px;
-  margin-top: 1rem;
+  height: auto;
+  margin: 0.5rem auto;
+  display: block;
 }
 
 h1 {
   margin-top: 0.5rem;
+  font-size: 1.5rem;
 }
 
 .buttons {
@@ -111,7 +114,7 @@ h1 {
   background-color: #c82333;
 }
 
-.anexo-img { /* Novo: Estilo para thumbnails de imagens */
+.anexo-img {
   max-width: 200px;
   height: auto;
   margin-top: 0.5rem;
@@ -119,7 +122,7 @@ h1 {
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
 
-.recado a { /* Novo: Estilo para links de download */
+.recado a {
   display: inline-block;
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
@@ -133,11 +136,24 @@ h1 {
   background-color: #0056b3;
 }
 
-/* Responsividade */
+/* Adicionado: Estilo para fallbacks de erro */
+.recado img[alt*="Erro"] {
+  color: red;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.recado a:contains("Erro") {
+  color: red;
+  text-decoration: none;
+}
+
+/* Responsividade para telas menores */
 @media (max-width: 600px) {
   header {
     padding: 0.8rem;
     flex-direction: column;
+    text-align: center;
   }
 
   .button-link {
@@ -147,5 +163,9 @@ h1 {
 
   .anexo-img {
     max-width: 100%;
+  }
+
+  .logo {
+    max-width: 100px;
   }
 }
