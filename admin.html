@@ -10,11 +10,73 @@
       text-align: center;
       padding: 2rem;
     }
-    .recados {
+    .form-container {
+      background-color: #f8f9fa;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    input, textarea {
+      width: 80%;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .file-preview {
       margin-top: 20px;
     }
-    .file-item {
-      margin-top: 1rem;
+    .file-preview img, .file-preview embed {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+    .file-preview a {
+      display: block;
+      margin-top: 10px;
+      text-decoration: none;
+      color: #007bff;
+    }
+    .recado {
+      background-color: #f1f1f1;
+      padding: 1rem;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
+    .recado img {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .recado embed {
+      width: 100%;
+      max-width: 500px;
+      height: 500px;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+    .recado p {
+      margin-top: 10px;
+      font-size: 1.1rem;
     }
   </style>
 </head>
@@ -22,26 +84,16 @@
 
   <h1>Painel Administrativo</h1>
 
-  <!-- Campo para criar recados -->
-  <div>
+  <div class="form-container">
     <h2>📢 Criar Recado</h2>
     <input type="text" id="titulo" placeholder="Título do Recado" />
     <textarea id="mensagem" placeholder="Escreva o recado..." rows="5"></textarea>
+    <input type="file" id="fileUpload" name="fileUpload" />
     <button onclick="publicarRecado()">Publicar Recado</button>
     <p id="status"></p>
   </div>
 
-  <div>
-    <h2>📂 Upload de Arquivos</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" id="fileUpload" name="fileUpload" multiple />
-      <button type="submit">Enviar Arquivos</button>
-    </form>
-  </div>
-
   <div id="fileList"></div>
-
-  <!-- Botão de voltar ao site -->
   <button onclick="window.location.href='index.html'">Voltar ao Site</button>
 
   <script type="module">
@@ -77,6 +129,8 @@
       const titulo = document.getElementById("titulo").value;
       const mensagem = document.getElementById("mensagem").value;
       const status = document.getElementById("status");
+      const fileInput = document.getElementById("fileUpload");
+      const file = fileInput.files[0];
 
       if (!titulo || !mensagem) {
         status.textContent = "❌ Preencha todos os campos!";
@@ -84,51 +138,32 @@
       }
 
       try {
+        let fileUrl = null;
+
+        // Se um arquivo foi selecionado, faz o upload
+        if (file) {
+          const fileRef = ref(storage, 'uploads/' + file.name);
+          await uploadBytes(fileRef, file);
+          fileUrl = await getDownloadURL(fileRef);
+        }
+
+        // Publica o recado no Firestore
         await addDoc(collection(db, "recados"), {
           titulo,
           mensagem,
           data: new Date(),
-          usuarioId: auth.currentUser.uid
+          usuarioId: auth.currentUser.uid,
+          fileUrl: fileUrl || null // Armazena o URL do arquivo se existir
         });
+
         status.textContent = "✅ Recado publicado com sucesso!";
+        document.getElementById("titulo").value = "";
+        document.getElementById("mensagem").value = "";
+        document.getElementById("fileUpload").value = "";
       } catch (e) {
         status.textContent = "❌ Erro ao publicar: " + e.message;
       }
     };
-
-    // Função para upload de arquivos
-    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-
-      const fileInput = document.getElementById("fileUpload");
-      const files = fileInput.files;
-
-      if (files.length === 0) {
-        alert("Por favor, selecione um arquivo.");
-        return;
-      }
-
-      const fileList = document.getElementById("fileList");
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileRef = ref(storage, 'uploads/' + file.name);
-        await uploadBytes(fileRef, file);
-        const fileUrl = await getDownloadURL(fileRef);
-
-        const fileElement = document.createElement("div");
-        fileElement.className = "file-item";
-
-        if (file.type.startsWith("image/")) {
-          fileElement.innerHTML = `<img src="${fileUrl}" alt="${file.name}" style="width: 200px;"/> <p>${file.name}</p>`;
-        } else if (file.type === "application/pdf") {
-          fileElement.innerHTML = `<embed src="${fileUrl}" type="application/pdf" width="100%" height="500px" /><p>${file.name}</p>`;
-        } else {
-          fileElement.innerHTML = `<a href="${fileUrl}" target="_blank">${file.name}</a>`;
-        }
-
-        fileList.appendChild(fileElement);
-      }
-    });
 
     // Função de logout
     window.logout = async function () {
