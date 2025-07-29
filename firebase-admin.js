@@ -10,7 +10,6 @@ import {
   collection,
   addDoc
 } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"; // Adicionado para Storage
 
 // Sua configuração do Firebase
 const firebaseConfig = {
@@ -26,7 +25,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore(app);
-const storage = getStorage(app); // Adicionado
 
 // Função de login
 window.login = async function () {
@@ -57,7 +55,6 @@ if (window.location.pathname.includes("admin.html")) {
 window.publicarRecado = async function () {
   const titulo = document.getElementById("titulo").value;
   const mensagem = document.getElementById("mensagem").value;
-  const anexo = document.getElementById("anexo").files[0]; // Adicionado
   const status = document.getElementById("status");
 
   if (!titulo || !mensagem) {
@@ -66,32 +63,15 @@ window.publicarRecado = async function () {
   }
 
   try {
-    let anexoUrl = null;
-    let anexoNome = null;
-    let anexoPath = null;
-
-    // Upload do anexo se existir
-    if (anexo) {
-      anexoPath = `anexos/${Date.now()}_${anexo.name}`; // Path único
-      const storageRef = ref(storage, anexoPath);
-      await uploadBytes(storageRef, anexo);
-      anexoUrl = await getDownloadURL(storageRef);
-      anexoNome = anexo.name;
-    }
-
     await addDoc(collection(db, "recados"), {
       titulo,
       mensagem,
       data: new Date(),
-      usuarioId: auth.currentUser.uid,
-      anexoUrl, // Adicionado
-      anexoNome, // Adicionado
-      anexoPath // Adicionado para deleção futura
+      usuarioId: auth.currentUser.uid // Associando o recado ao ID do usuário autenticado
     });
     status.textContent = "✅ Recado publicado com sucesso!";
     document.getElementById("titulo").value = "";
     document.getElementById("mensagem").value = "";
-    document.getElementById("anexo").value = ""; // Limpa o input de file
   } catch (e) {
     status.textContent = "❌ Erro ao publicar: " + e.message;
   }

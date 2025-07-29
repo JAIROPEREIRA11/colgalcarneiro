@@ -1,5 +1,4 @@
-/* CSS do index.html */
-
+/* Estilos gerais */
 body {
   font-family: Arial, sans-serif;
   background-color: #f2f2f2;
@@ -16,113 +15,51 @@ header {
 }
 
 .logo {
-  max-width: 120px;
+  max-width: 100%;
+  height: auto;
   margin-top: 1rem;
 }
 
 h1 {
   margin-top: 0.5rem;
+  font-size: 1.5rem;
 }
 
-.login-link, .logout-link {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+/* Tabela de Horário */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
 }
 
-.logout-link button {
-  background-color: #dc3545;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
 }
 
-.buttons {
-  margin: 2rem 0;
-}
-
-.button {
-  display: inline-block;
-  margin: 1rem;
-  padding: 1rem 2rem;
+th {
   background-color: #007bff;
   color: white;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 1.2rem;
 }
 
-.recados {
-  max-width: 600px;
-  margin: auto;
-  text-align: left;
-  padding: 1rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+td[contenteditable="true"]:empty:before {
+  content: "Clique para editar";
+  color: #888;
+  font-style: italic;
 }
 
-.recado {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #ccc;
+td {
+  background-color: #f9f9f9;
 }
 
-.recado a { /* Adicionado para links de anexo */
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
+td[contenteditable="true"]:focus {
+  background-color: #e7f3fe;
 }
 
-.recado a:hover {
-  text-decoration: underline;
-}
-
-input[type="file"] { /* Adicionado para input de anexo */
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-}
-
-/* Responsividade para telas menores */
-@media (max-width: 600px) {
-  .login-link a {
-    padding: 0.4rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .logo {
-    max-width: 100px;
-  }
-
-  header {
-    padding: 0.8rem;
-  }
-
-  .logout-link button {
-    padding: 0.4rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .button {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-  }
-
-  .recados {
-    padding: 0.8rem;
-    max-width: 90%;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  input[type="file"] {
+/* Responsividade */
+@media (max-width: 768px) {
+  table {
     font-size: 0.9rem;
   }
 }
