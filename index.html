@@ -26,52 +26,21 @@
     <h2>📢 Recados Importantes</h2>
     <div id="recadoList">Carregando recados...</div>
 
-    <!-- Tabela de Horário -->
-    <h2>🕒 Horário de Aulas</h2>
-    <table id="horarioTable">
-      <thead>
-        <tr>
-          <th>Período</th>
-          <th>Segunda</th>
-          <th>Terça</th>
-          <th>Quarta</th>
-          <th>Quinta</th>
-          <th>Sexta</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>08:00 - 09:00</td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-        </tr>
-        <tr>
-          <td>09:00 - 10:00</td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-        </tr>
-        <tr>
-          <td>10:00 - 11:00</td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-          <td contenteditable="true"></td>
-        </tr>
-        <!-- Continue as outras linhas de horário -->
-      </tbody>
-    </table>
+    <!-- Formulário para Upload de Arquivos -->
+    <h2>📂 Upload de Arquivos</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" id="fileUpload" name="fileUpload" multiple />
+      <button type="submit">Enviar Arquivos</button>
+    </form>
+
+    <div id="fileList">
+      <!-- Arquivos enviados aparecerão aqui -->
+    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -88,6 +57,7 @@
     const auth = getAuth();
     const db = getFirestore(app);
 
+    // Função para carregar recados
     async function carregarRecados() {
       const container = document.getElementById("recadoList");
       container.innerHTML = "Carregando recados...";
@@ -106,6 +76,32 @@
         container.appendChild(el);
       });
     }
+
+    // Função para fazer upload de arquivos
+    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      
+      const fileInput = document.getElementById("fileUpload");
+      const files = fileInput.files;
+
+      if (files.length === 0) {
+        alert("Por favor, selecione um arquivo para enviar.");
+        return;
+      }
+
+      // Exibindo os arquivos na tela
+      const fileList = document.getElementById("fileList");
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileElement = document.createElement("div");
+        fileElement.innerHTML = `<a href="${URL.createObjectURL(file)}" target="_blank">${file.name}</a>`;
+        fileList.appendChild(fileElement);
+      }
+      
+      // Aqui, se você estiver utilizando Firebase ou outro serviço para armazenar, pode enviar os arquivos para o armazenamento.
+      // Exemplo de upload para Firebase Storage ou outro servidor pode ser adicionado aqui.
+
+    });
 
     window.logout = async function () {
       await signOut(auth);
