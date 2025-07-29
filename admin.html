@@ -16,13 +16,6 @@
       padding: 0.5rem;
       width: 220px;
     }
-    textarea {
-      display: block;
-      margin: 1rem auto;
-      padding: 0.5rem;
-      width: 220px;
-      height: 100px;
-    }
     button {
       padding: 0.5rem 1.5rem;
       background-color: #007bff;
@@ -38,56 +31,32 @@
       margin-top: 1rem;
       color: green;
     }
-    .recado {
-      background-color: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin: 1rem auto;
-      width: 80%;
-      text-align: left;
-      border-radius: 8px;
-    }
-    .recado button {
-      background-color: red;
-      padding: 0.5rem 1rem;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .recado button:hover {
-      background-color: darkred;
-    }
-    #voltarButton {
-      background-color: #28a745;
-      padding: 0.5rem 1.5rem;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
+    .file-item {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
 
-  <h1>Painel de Recados</h1>
+  <h1>Painel Administrativo</h1>
 
-  <input type="text" id="titulo" placeholder="Título do recado" />
-  <textarea id="mensagem" placeholder="Escreva o recado..."></textarea>
-  <button onclick="publicarRecado()">Incluir Recado</button>
-  <p id="status"></p>
+  <div>
+    <!-- Formulário para Upload de Arquivos -->
+    <h2>📂 Upload de Arquivos</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" id="fileUpload" name="fileUpload" multiple />
+      <button type="submit">Enviar Arquivos</button>
+    </form>
+  </div>
 
-  <div id="recadoList">Carregando recados...</div>
-
-  <!-- Botão de logout -->
-  <button id="logoutButton" onclick="logout()">Sair</button>
-
-  <!-- Botão de voltar após logout -->
-  <button id="voltarButton" onclick="voltarPagina()">Voltar ao Site</button>
+  <div id="fileList">
+    <!-- Arquivos enviados aparecerão aqui -->
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCuqY257lxJixrEv4teEgzrjjK8RS9esjk",
@@ -101,91 +70,60 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
-    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // Função de logout
-    window.logout = async function () {
-      await signOut(auth);
-      document.getElementById("logoutButton").style.display = "none"; // Esconde o botão de logout
-      document.getElementById("voltarButton").style.display = "block"; // Exibe o botão de voltar
-    };
+    // Função para fazer upload de arquivos
+    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-    // Função para voltar à página inicial
-    window.voltarPagina = function () {
-      window.location.href = "index.html"; // Redireciona para a página inicial
-    };
+      const fileInput = document.getElementById("fileUpload");
+      const files = fileInput.files;
 
-    // Função para publicar o recado
-    window.publicarRecado = async function () {
-      const titulo = document.getElementById("titulo").value;
-      const mensagem = document.getElementById("mensagem").value;
-      const status = document.getElementById("status");
-
-      if (!titulo || !mensagem) {
-        status.textContent = "❌ Preencha todos os campos.";
+      if (files.length === 0) {
+        alert("Por favor, selecione um arquivo para enviar.");
         return;
       }
 
-      if (!auth.currentUser) {
-        status.textContent = "❌ Você precisa estar logado para publicar.";
-        return;
+      const fileList = document.getElementById("fileList");
+
+      // Upload dos arquivos para o Firebase Storage
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileRef = ref(storage, 'uploads/' + file.name);
+
+        try {
+          await uploadBytes(fileRef, file);
+          const fileUrl = await getDownloadURL(fileRef);
+          const fileElement = document.createElement("div");
+          fileElement.className = "file-item";
+
+          if (file.type.startsWith("image/")) {
+            fileElement.innerHTML = `<img src="${fileUrl}" alt="${file.name}" style="width: 200px;"/><p>${file.name}</p>`;
+          } else if (file.type === "application/pdf") {
+            fileElement.innerHTML = `<embed src="${fileUrl}" type="application/pdf" width="100%" height="500px" /><p>${file.name}</p>`;
+          } else {
+            fileElement.innerHTML = `<a href="${fileUrl}" target="_blank">${file.name}</a>`;
+          }
+
+          fileList.appendChild(fileElement);
+        } catch (error) {
+          console.error("Erro ao fazer upload:", error);
+        }
       }
+    });
 
-      try {
-        await addDoc(collection(db, "recados"), {
-          titulo,
-          mensagem,
-          data: new Date(),
-          usuarioId: auth.currentUser.uid
-        });
-        status.textContent = "✅ Recado publicado com sucesso!";
-        document.getElementById("titulo").value = "";
-        document.getElementById("mensagem").value = "";
-        carregarRecados(); // Atualiza a lista de recados
-      } catch (e) {
-        status.textContent = "❌ Erro ao publicar: " + e.message;
-      }
-    };
-
-    // Função para carregar os recados
-    async function carregarRecados() {
-      const container = document.getElementById("recadoList");
-      container.innerHTML = "Carregando recados...";
-
-      const recadosRef = collection(db, "recados");
-      const snapshot = await getDocs(recadosRef);
-
-      container.innerHTML = ""; // Limpa a mensagem de carregamento
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const el = document.createElement("div");
-        el.className = "recado";
-        el.innerHTML = `
-          <strong>${data.titulo}</strong><br>${data.mensagem}
-          <br>
-          <button onclick="removerRecado('${docSnap.id}')">🗑️ Remover</button>
-        `;
-        container.appendChild(el);
-      });
-    }
-
-    // Função para remover o recado
-    window.removerRecado = async function (id) {
-      const confirmar = confirm("Deseja realmente remover este recado?");
-      if (confirmar) {
-        await deleteDoc(doc(db, "recados", id));
-        carregarRecados(); // Atualiza a lista de recados
-      }
-    };
-
-    // Verificação de autenticação
+    // Verificação de login
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
       }
     });
 
-    carregarRecados(); // Carrega os recados ao carregar a página
+    // Função de logout
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "login.html";
+    };
   </script>
 
 </body>
