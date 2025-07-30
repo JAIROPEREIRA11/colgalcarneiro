@@ -1,3 +1,5 @@
+<DOCUMENT filename="admin.html">
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -10,15 +12,23 @@
 <body>
   <header>
     <h1>📢 Painel Administrativo</h1>
-    <button onclick="logout()" aria-label="Sair da conta">Sair</button>
+    <button onclick="logout()">Sair</button>
   </header>
 
   <section class="recados">
     <h2>📢 Criar Recado</h2>
-    <input type="text" id="titulo" placeholder="Título do Recado" aria-label="Título do Recado">
-    <textarea id="mensagem" placeholder="Mensagem do Recado" aria-label="Mensagem do Recado"></textarea>
-    <input type="file" id="arquivo" accept="image/*,application/pdf" aria-label="Anexar Foto ou PDF">
-    <button onclick="publicarRecado()" aria-label="Publicar Recado">Publicar Recado</button>
+    <input type="text" id="titulo" placeholder="Título do Recado" required>
+    <textarea id="mensagem" placeholder="Mensagem do Recado" required></textarea>
+    <input type="file" id="arquivo" accept="image/*,application/pdf">
+    <label for="externalLink">Link Externo (opcional, cole o link de compartilhamento do Google Drive):</label>
+    <input type="text" id="externalLink" placeholder="https://drive.google.com/file/d/.../view?usp=sharing">
+    <label for="linkType">Tipo do Link (se usar link externo):</label>
+    <select id="linkType">
+      <option value="">Nenhum</option>
+      <option value="image">Imagem</option>
+      <option value="pdf">PDF</option>
+    </select>
+    <button onclick="publicarRecado()">Publicar Recado</button>
     <p id="status"></p>
   </section>
 
@@ -30,3 +40,4 @@
   <a href="index.html" class="button-link">Voltar ao Site</a>
 </body>
 </html>
+</DOCUMENT>

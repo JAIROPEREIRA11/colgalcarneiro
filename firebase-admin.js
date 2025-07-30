@@ -1,3 +1,4 @@
+<DOCUMENT filename="firebase-admin.js">
 // Firebase imports (Versão 10.12.4)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
@@ -69,6 +70,8 @@ window.publicarRecado = async function () {
   const titulo = document.getElementById("titulo").value;
   const mensagem = document.getElementById("mensagem").value;
   const arquivo = document.getElementById("arquivo").files[0];
+  const externalLink = document.getElementById("externalLink").value;
+  const linkType = document.getElementById("linkType").value;
   const status = document.getElementById("status");
 
   if (!titulo || !mensagem) {
@@ -82,22 +85,51 @@ window.publicarRecado = async function () {
     return;
   }
 
+  if (arquivo && externalLink) {
+    status.textContent = "❌ Use apenas um: arquivo local ou link externo.";
+    setTimeout(() => { status.textContent = ""; }, 5000);
+    return;
+  }
+
+  if (externalLink && !linkType) {
+    status.textContent = "❌ Selecione o tipo do link externo.";
+    setTimeout(() => { status.textContent = ""; }, 5000);
+    return;
+  }
+
   try {
     status.textContent = "📤 Publicando recado...";
     console.log("Iniciando publicação...");
+
+    let arquivoURL = null;
+    let arquivoTipo = null;
+
+    if (externalLink) {
+      // Extrai o ID do link do Google Drive
+      const match = externalLink.match(/\/file\/d\/([^\/]+)/);
+      if (!match) {
+        throw new Error("Link do Google Drive inválido. Use o formato de compartilhamento padrão.");
+      }
+      const id = match[1];
+
+      if (linkType === "image") {
+        arquivoURL = `https://drive.google.com/uc?export=view&id=${id}`;
+        arquivoTipo = "image/jpeg"; // Pode ser qualquer 'image/' para a lógica de exibição
+      } else if (linkType === "pdf") {
+        arquivoURL = `https://drive.google.com/uc?export=download&id=${id}`;
+        arquivoTipo = "application/pdf";
+      }
+    }
 
     const recadoRef = await addDoc(collection(db, "recados"), {
       titulo,
       mensagem,
       data: Timestamp.now(),
       usuarioId: auth.currentUser.uid,
-      arquivoURL: null,
-      arquivoTipo: null
+      arquivoURL,
+      arquivoTipo
     });
     console.log("Recado criado com ID:", recadoRef.id);
-
-    let arquivoURL = null;
-    let arquivoTipo = null;
 
     if (arquivo) {
       status.textContent = "📁 Fazendo upload do arquivo...";
@@ -131,6 +163,8 @@ window.publicarRecado = async function () {
     document.getElementById("titulo").value = "";
     document.getElementById("mensagem").value = "";
     document.getElementById("arquivo").value = "";
+    document.getElementById("externalLink").value = "";
+    document.getElementById("linkType").value = "";
     setTimeout(() => { status.textContent = ""; }, 5000);
     carregarRecadosAdmin();
   } catch (e) {
@@ -297,3 +331,4 @@ window.logout = function () {
 if (window.location.pathname.includes("index.html")) {
   carregarRecadosComAuth();
 }
+</DOCUMENT>
