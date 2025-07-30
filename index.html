@@ -1,32 +1,28 @@
+<DOCUMENT filename="index.html">
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colégio Estadual General Carneiro</title>
+  <title>Colégio General Carneiro</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="firebase-admin.js"></script>
 </head>
 <body>
   <header>
-    <img src="assets/brasao.jpeg" alt="Logo do Colégio Estadual General Carneiro" class="logo">
-    <h1>Colégio Estadual General Carneiro</h1>
-    <a href="login.html" class="button-link">Área Administrativa</a>
+    <h1>📢 Colégio General Carneiro</h1>
+    <a href="login.html" class="button-link">Painel Administrativo</a>
   </header>
 
-  <section class="buttons">
-    <a href="https://rco.seduc.mt.gov.br/" class="button-link">Acessar RCO</a>
-    <a href="https://ponto.seduc.mt.gov.br/" class="button-link">Registro de Ponto</a>
-    <a href="https://contracheque.mt.gov.br/" class="button-link">Contra Cheque</a>
+  <section class="horario">
+    <h2>🕒 Horário da Escola</h2>
+    <div id="horarioContainer">Carregando horário...</div>
   </section>
 
   <section class="recados">
-    <h2>📢 Recados Importantes</h2>
+    <h2>📋 Recados</h2>
     <div id="recadoList">Carregando recados...</div>
   </section>
-
-  <script>
-    carregarRecadosComAuth();
-  </script>
 </body>
 </html>
+</DOCUMENT>

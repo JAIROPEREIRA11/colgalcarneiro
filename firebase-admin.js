@@ -15,7 +15,8 @@ import {
   deleteDoc,
   doc,
   Timestamp,
-  updateDoc
+  setDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import {
   getStorage,
@@ -61,29 +62,17 @@ if (window.location.pathname.includes("admin.html")) {
       window.location.href = "login.html";
     } else {
       carregarRecadosAdmin();
+      carregarHorarioAdmin();
     }
   });
 }
 
-// Função para publicar recado
-window.publicarRecado = async function () {
-  const titulo = document.getElementById("titulo").value;
-  const mensagem = document.getElementById("mensagem").value;
-  const arquivo = document.getElementById("arquivo").files[0];
-  const externalLink = document.getElementById("externalLink").value;
-  const linkType = document.getElementById("linkType").value;
-  const status = document.getElementById("status");
-
-  if (!titulo || !mensagem) {
-    status.textContent = "❌ Preencha título e mensagem.";
-    setTimeout(() => { status.textContent = ""; }, 5000);
-    return;
-  }
-
-  if (!auth.currentUser) {
-    status.textContent = "❌ Você precisa estar logado.";
-    return;
-  }
+// Função para atualizar o horário
+window.atualizarHorario = async function () {
+  const arquivo = document.getElementById("horarioArquivo").files[0];
+  const externalLink = document.getElementById("horarioLink").value;
+  const linkType = document.getElementById("horarioLinkType").value;
+  const status = document.getElementById("horarioStatus");
 
   if (arquivo && externalLink) {
     status.textContent = "❌ Use apenas um: arquivo local ou link externo.";
@@ -98,28 +87,160 @@ window.publicarRecado = async function () {
   }
 
   try {
-    status.textContent = "📤 Publicando recado...";
-    console.log("Iniciando publicação...");
-
+    status.textContent = "📤 Atualizando horário...";
     let arquivoURL = null;
     let arquivoTipo = null;
 
     if (externalLink) {
-      // Extrai o ID do link do Google Drive
       const match = externalLink.match(/\/file\/d\/([^\/]+)/);
       if (!match) {
         throw new Error("Link do Google Drive inválido. Use o formato de compartilhamento padrão.");
       }
       const id = match[1];
-
       if (linkType === "image") {
         arquivoURL = `https://drive.google.com/uc?export=view&id=${id}`;
-        arquivoTipo = "image/jpeg"; // Pode ser qualquer 'image/' para a lógica de exibição
+        arquivoTipo = "image/jpeg";
       } else if (linkType === "pdf") {
-        arquivoURL = `https://drive.google.com/uc?export=download&id=${id}`;
+        arquivoURL = `https://drive.google.com/file/d/${id}/preview`;
         arquivoTipo = "application/pdf";
       }
     }
+
+    if (arquivo) {
+      if (arquivo.size > 5 * 1024 * 1024) {
+        throw new Error("Arquivo muito grande (máx 5MB).");
+      }
+      if (!arquivo.type.startsWith('image/') && arquivo.type !== 'application/pdf') {
+        throw new Error("Apenas imagens ou PDFs permitidos.");
+      }
+
+      const fileRef = storageRef(storage, `horario/horario.${arquivo.name.split('.').pop()}`);
+      await uploadBytes(fileRef, arquivo);
+      arquivoURL = await getDownloadURL(fileRef);
+      arquivoTipo = arquivo.type;
+    }
+
+    await setDoc(doc(db, "horario", "current"), {
+      arquivoURL,
+      arquivoTipo,
+      data: Timestamp.now()
+    });
+
+    status.textContent = "✅ Horário atualizado com sucesso!";
+    setTimeout(() => { status.textContent = ""; }, 5000);
+    carregarHorarioAdmin();
+    if (window.location.pathname.includes("index.html")) {
+      carregarHorario();
+    }
+  } catch (e) {
+    console.error("Erro ao atualizar horário:", e);
+    status.textContent = "❌ Erro: " + e.message;
+    setTimeout(() => { status.textContent = ""; }, 5000);
+  }
+};
+
+// Função para carregar horário no admin
+async function carregarHorarioAdmin() {
+  const container = document.getElementById("horarioContainer");
+  if (!container) return;
+
+  try {
+    const horarioDoc = await getDoc(doc(db, "horario", "current"));
+    container.innerHTML = "";
+
+    if (!horarioDoc.exists()) {
+      container.innerHTML = "Nenhum horário configurado.";
+      return;
+    }
+
+    const data = horarioDoc.data();
+    container.innerHTML = "<strong>Horário Atual:</strong><br>";
+
+    if (data.arquivoURL) {
+      if (data.arquivoTipo && data.arquivoTipo.startsWith('image/')) {
+        const img = document.createElement("img");
+        img.src = data.arquivoURL;
+        img.alt = "Horário da Escola";
+        img.className = "anexo-img";
+        img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem'; };
+        container.appendChild(img);
+      } else {
+        const iframe = document.createElement("iframe");
+        iframe.src = data.arquivoURL;
+        iframe.style.width = "100%";
+        iframe.style.height = "500px";
+        iframe.style.border = "none";
+        container.appendChild(iframe);
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao carregar horário:", e);
+    container.innerHTML = "Erro ao carregar: " + e.message;
+  }
+}
+
+// Função para carregar horário na index
+window.carregarHorario = async function () {
+  const container = document.getElementById("horarioContainer");
+  if (!container) return;
+
+  container.innerHTML = "Carregando horário...";
+
+  try {
+    const horarioDoc = await getDoc(doc(db, "horario", "current"));
+    container.innerHTML = "";
+
+    if (!horarioDoc.exists()) {
+      container.innerHTML = "Nenhum horário configurado.";
+      return;
+    }
+
+    const data = horarioDoc.data();
+    if (data.arquivoURL) {
+      if (data.arquivoTipo && data.arquivoTipo.startsWith('image/')) {
+        const img = document.createElement("img");
+        img.src = data.arquivoURL;
+        img.alt = "Horário da Escola";
+        img.className = "anexo-img";
+        img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem'; };
+        container.appendChild(img);
+      } else {
+        const iframe = document.createElement("iframe");
+        iframe.src = data.arquivoURL;
+        iframe.style.width = "100%";
+        iframe.style.height = "500px";
+        iframe.style.border = "none";
+        container.appendChild(iframe);
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao carregar horário:", e);
+    container.innerHTML = "Erro ao carregar: " + e.message;
+  }
+};
+
+// Função para publicar recado (mantida como antes, sem link externo)
+window.publicarRecado = async function () {
+  const titulo = document.getElementById("titulo").value;
+  const mensagem = document.getElementById("mensagem").value;
+  const arquivo = document.getElementById("arquivo").files[0];
+  const status = document.getElementById("status");
+
+  if (!titulo || !mensagem) {
+    status.textContent = "❌ Preencha título e mensagem.";
+    setTimeout(() => { status.textContent = ""; }, 5000);
+    return;
+  }
+
+  if (!auth.currentUser) {
+    status.textContent = "❌ Você precisa estar logado.";
+    return;
+  }
+
+  try {
+    status.textContent = "📤 Publicando recado...";
+    let arquivoURL = null;
+    let arquivoTipo = null;
 
     const recadoRef = await addDoc(collection(db, "recados"), {
       titulo,
@@ -129,12 +250,9 @@ window.publicarRecado = async function () {
       arquivoURL,
       arquivoTipo
     });
-    console.log("Recado criado com ID:", recadoRef.id);
 
     if (arquivo) {
       status.textContent = "📁 Fazendo upload do arquivo...";
-      console.log("Arquivo selecionado:", arquivo.name, arquivo.type);
-
       if (arquivo.size > 5 * 1024 * 1024) {
         throw new Error("Arquivo muito grande (máx 5MB).");
       }
@@ -144,32 +262,21 @@ window.publicarRecado = async function () {
 
       const fileRef = storageRef(storage, `recados/${recadoRef.id}/${arquivo.name}`);
       await uploadBytes(fileRef, arquivo);
-      console.log("Upload concluído no Storage.");
-
       arquivoURL = await getDownloadURL(fileRef);
       arquivoTipo = arquivo.type;
-      console.log("URL gerada:", arquivoURL);
 
-      try {
-        await updateDoc(doc(db, "recados", recadoRef.id), { arquivoURL, arquivoTipo });
-        console.log("Documento atualizado com URL.");
-      } catch (updateError) {
-        console.error("Erro no update do Firestore:", updateError);
-        throw new Error("Falha ao salvar URL no banco: " + updateError.message);
-      }
+      await updateDoc(doc(db, "recados", recadoRef.id), { arquivoURL, arquivoTipo });
     }
 
-    status.textContent = "✅ Publicado com sucesso! Recarregue se necessário.";
+    status.textContent = "✅ Publicado com sucesso!";
     document.getElementById("titulo").value = "";
     document.getElementById("mensagem").value = "";
     document.getElementById("arquivo").value = "";
-    document.getElementById("externalLink").value = "";
-    document.getElementById("linkType").value = "";
     setTimeout(() => { status.textContent = ""; }, 5000);
     carregarRecadosAdmin();
   } catch (e) {
-    console.error("Erro geral na publicação:", e);
-    status.textContent = "❌ Erro: " + e.message + " (Verifique o console para detalhes)";
+    console.error("Erro na publicação:", e);
+    status.textContent = "❌ Erro: " + e.message;
     setTimeout(() => { status.textContent = ""; }, 5000);
   }
 };
@@ -180,7 +287,6 @@ async function carregarRecadosAdmin() {
   if (!container) return;
 
   container.innerHTML = "Carregando recados...";
-  console.log("Carregando recados na admin...");
 
   try {
     const recadosRef = collection(db, "recados");
@@ -194,8 +300,6 @@ async function carregarRecadosAdmin() {
 
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      console.log("Recado carregado:", data.titulo, "Arquivo URL:", data.arquivoURL);
-
       const el = document.createElement("div");
       el.className = "recado";
       el.innerHTML = `
@@ -209,14 +313,13 @@ async function carregarRecadosAdmin() {
           img.src = data.arquivoURL;
           img.alt = "Anexo";
           img.className = "anexo-img";
-          img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem (verifique permissões)'; };
+          img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem'; };
           el.appendChild(img);
         } else {
           const link = document.createElement("a");
           link.href = data.arquivoURL;
           link.textContent = "Baixar Arquivo (PDF)";
           link.target = "_blank";
-          link.onerror = () => { link.textContent = 'Erro ao carregar arquivo'; };
           el.appendChild(link);
         }
       }
@@ -235,29 +338,12 @@ async function carregarRecadosAdmin() {
   }
 }
 
-// Função para remover um recado
-window.removerRecado = async function (id) {
-  const confirmar = confirm("Tem certeza que deseja apagar este recado?");
-  if (confirmar) {
-    try {
-      await deleteDoc(doc(db, "recados", id));
-      carregarRecadosAdmin();
-      if (window.location.pathname.includes("index.html")) {
-        carregarRecadosComAuth();
-      }
-    } catch (e) {
-      alert("Erro ao remover: " + e.message);
-    }
-  }
-};
-
 // Função para carregar recados na index
 window.carregarRecadosComAuth = async function () {
   const container = document.getElementById("recadoList");
   if (!container) return;
 
   container.innerHTML = "Carregando recados...";
-  console.log("Carregando recados na index...");
 
   onAuthStateChanged(auth, async (user) => {
     container.innerHTML = "";
@@ -273,8 +359,6 @@ window.carregarRecadosComAuth = async function () {
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        console.log("Recado carregado:", data.titulo, "Arquivo URL:", data.arquivoURL);
-
         const el = document.createElement("div");
         el.className = "recado";
         el.innerHTML = `
@@ -288,14 +372,13 @@ window.carregarRecadosComAuth = async function () {
             img.src = data.arquivoURL;
             img.alt = "Anexo";
             img.className = "anexo-img";
-            img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem (verifique permissões)'; };
+            img.onerror = () => { img.src = ''; img.alt = 'Erro ao carregar imagem'; };
             el.appendChild(img);
           } else {
             const link = document.createElement("a");
             link.href = data.arquivoURL;
             link.textContent = "Baixar Arquivo (PDF)";
             link.target = "_blank";
-            link.onerror = () => { link.textContent = 'Erro ao carregar arquivo'; };
             el.appendChild(link);
           }
         }
@@ -318,6 +401,22 @@ window.carregarRecadosComAuth = async function () {
   });
 };
 
+// Função para remover um recado
+window.removerRecado = async function (id) {
+  const confirmar = confirm("Tem certeza que deseja apagar este recado?");
+  if (confirmar) {
+    try {
+      await deleteDoc(doc(db, "recados", id));
+      carregarRecadosAdmin();
+      if (window.location.pathname.includes("index.html")) {
+        carregarRecadosComAuth();
+      }
+    } catch (e) {
+      alert("Erro ao remover: " + e.message);
+    }
+  }
+};
+
 // Função de logout
 window.logout = function () {
   signOut(auth).then(() => {
@@ -327,8 +426,12 @@ window.logout = function () {
   });
 };
 
-// Executa carregamento automático na index
+// Executa carregamento automático
 if (window.location.pathname.includes("index.html")) {
   carregarRecadosComAuth();
+  carregarHorario();
+}
+if (window.location.pathname.includes("admin.html")) {
+  carregarHorarioAdmin();
 }
 </DOCUMENT>

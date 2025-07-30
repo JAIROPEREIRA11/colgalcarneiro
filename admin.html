@@ -1,5 +1,4 @@
 <DOCUMENT filename="admin.html">
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,19 +14,26 @@
     <button onclick="logout()">Sair</button>
   </header>
 
+  <section class="horario">
+    <h2>🕒 Atualizar Horário da Escola</h2>
+    <input type="file" id="horarioArquivo" accept="image/*,application/pdf">
+    <label for="horarioLink">Link Externo (opcional, cole o link de compartilhamento do Google Drive):</label>
+    <input type="text" id="horarioLink" placeholder="https://drive.google.com/file/d/.../view?usp=sharing">
+    <label for="horarioLinkType">Tipo do Link (se usar link externo):</label>
+    <select id="horarioLinkType">
+      <option value="">Nenhum</option>
+      <option value="image">Imagem</option>
+      <option value="pdf">PDF</option>
+    </select>
+    <button onclick="atualizarHorario()">Atualizar Horário</button>
+    <p id="horarioStatus"></p>
+  </section>
+
   <section class="recados">
     <h2>📢 Criar Recado</h2>
     <input type="text" id="titulo" placeholder="Título do Recado" required>
     <textarea id="mensagem" placeholder="Mensagem do Recado" required></textarea>
     <input type="file" id="arquivo" accept="image/*,application/pdf">
-    <label for="externalLink">Link Externo (opcional, cole o link de compartilhamento do Google Drive):</label>
-    <input type="text" id="externalLink" placeholder="https://drive.google.com/file/d/.../view?usp=sharing">
-    <label for="linkType">Tipo do Link (se usar link externo):</label>
-    <select id="linkType">
-      <option value="">Nenhum</option>
-      <option value="image">Imagem</option>
-      <option value="pdf">PDF</option>
-    </select>
     <button onclick="publicarRecado()">Publicar Recado</button>
     <p id="status"></p>
   </section>
